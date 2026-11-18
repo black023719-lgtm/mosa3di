@@ -1035,8 +1035,6 @@ function greeting(){
   return `<div class="greet">
     <div class="halo"><span class="logo">${I.logo}</span></div>
     <h2>مرحبًا بك${n ? ' يا ' + esc(n) : ''} مجددًا!</h2>
-    <p>كيف يمكنني مساعدتك اليوم؟</p>
-    <div class="sugg">${sug.map(s => `<button data-act="quick" data-q="${esc(s[2])}" data-send="${s[3]}"><span>${I[s[0]]}</span><b>${s[1]}</b></button>`).join('')}</div>
   </div>`;
 }
 function msgHTML(m, i){

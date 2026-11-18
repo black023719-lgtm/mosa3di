@@ -410,6 +410,7 @@ const store = {
     return def;
   },
   save(n, getBody){
+    if (S.loggingOut) return;
     clearTimeout(this.t[n]);
     this.t[n] = setTimeout(() => {
       const body = JSON.parse(JSON.stringify(getBody()));
@@ -1183,40 +1184,48 @@ function seg(name, label, opts, cur){
 function renderSettings(){
   const st = S.state.settings, conf = S.ui.confirm, gem = provider() === 'gemini';
   const has = gem ? geminiKey() : claudeKey();
+  const out = P('<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 17l-5-5 5-5M5 12h11"/>');
   $('#screen').innerHTML = header('الإعدادات') + `
   <div class="scroll">
     <div class="glabel">عقل المساعد</div>
     <div class="group">
-      <div class="grow">${gi(I2.spark)}<span class="gt"><b>النموذج</b></span>${sel('data-set="provider"', [['gemini','Gemini (مجاني)'],['claude','Claude']], provider(), 'عقل المساعد')}</div>
-      <div class="grow">${gi(I2.key)}<span class="gt"><b>مفتاح ${gem ? 'Gemini' : 'Claude'}</b><span class="${has ? 'okt' : 'badt'}">${has ? 'محفوظ' : 'لا يوجد مفتاح بعد'}</span></span></div>
-      <div class="grow"><input class="ginp" data-bind="settings.${gem ? 'gemKey' : 'apiKey'}" type="password" dir="ltr" autocomplete="off" value="${esc(gem ? (st.gemKey || '') : (st.apiKey || ''))}" placeholder="${gem ? 'AIza…' : 'sk-ant-…'}" aria-label="المفتاح"></div>
+      <div class="grow">${gi(I2.spark)}<span class="gt"><b>النموذج</b></span>${sel('data-set="provider"', [['gemini','Gemini'],['claude','Claude']], provider(), 'عقل المساعد')}</div>
+      <div class="grow">${gi(I2.key)}<span class="gt"><b>مفتاح ${gem ? 'Gemini' : 'Claude'}</b><span class="${has ? 'okt' : 'badt'}">${has ? 'محفوظ' : 'غير موجود'}</span></span></div>
+      <div class="grow"><input class="ginp" data-bind="settings.${gem ? 'gemKey' : 'apiKey'}" type="password" dir="ltr" autocomplete="off" value="${esc(gem ? (st.gemKey || '') : (st.apiKey || ''))}" aria-label="المفتاح"></div>
       <div class="grow">${gi(I2.gauge)}<span class="gt"><b>قوة المساعد</b></span>${sel('data-set="tier"', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier, 'قوة المساعد')}</div>
     </div>
-    <p class="gfoot">${gem ? 'احصل على مفتاح مجاني من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.' : 'احصل على المفتاح من <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.'} يُحفظ على جهازك فقط.</p>
     <div class="glabel">المظهر والردود</div>
     <div class="group">
       <div class="grow">${gi(I2.sun)}<span class="gt"><b>المظهر</b></span>${sel('data-set="theme"', [['light','فاتح'],['dark','داكن'],['auto','تلقائي']], st.theme, 'المظهر')}</div>
       <div class="grow">${gi(I2.text)}<span class="gt"><b>طول الردود</b></span>${sel('data-set="length"', [['short','قصيرة'],['long','مفصّلة']], st.length, 'طول الردود')}</div>
     </div>
-    <div class="glabel">حساب جوجل (اختياري)</div>
+    <div class="glabel">حساب جوجل</div>
     <div class="group">
-      <div class="grow"><input class="ginp" data-bind="settings.gClientId" dir="ltr" autocomplete="off" value="${esc(st.gClientId || '')}" placeholder="Client ID: xxxx.apps.googleusercontent.com" aria-label="معرّف جوجل"></div>
+      <div class="grow">${gi(I2.google)}<input class="ginp" data-bind="settings.gClientId" dir="ltr" autocomplete="off" value="${esc(st.gClientId || '')}" placeholder="Client ID" aria-label="معرّف جوجل"></div>
     </div>
-    <p class="gfoot">لربط جيميل ودرايف. طريقة الحصول عليه في «مساعدة ودعم».</p>
     <div class="glabel">البيانات</div>
     <div class="group">
       <div class="grow">${gi(I.trash, ['var(--badSoft)','var(--bad)'])}<span class="gt"><b>مسح سجل المحادثة</b></span><button class="gbtn danger" data-act="clearchat">${conf === 'chat' ? 'تأكيد' : 'مسح'}</button></div>
-      <div class="grow">${gi(I.shield)}<span class="gt"><b>مسح الموافقات القديمة</b></span><button class="gbtn" data-act="clearpend">مسح</button></div>
     </div>
-    <p class="gfoot" style="text-align:center">مساعدي · الإصدار 1.1 · كل بياناتك على هذا الجهاز فقط</p>
+    <div class="group">
+      <button class="grow" data-act="logout">${gi(out, ['var(--badSoft)','var(--bad)'])}<span class="gt"><b style="color:var(--bad);font-weight:600">${conf === 'logout' ? 'اضغط مرة أخرى للتأكيد' : 'تسجيل الخروج'}</b>${conf === 'logout' ? '<span>سيُحذف مفتاحك وبياناتك من هذا الجهاز</span>' : ''}</span></button>
+    </div>
   </div>`;
+}
+function logout(){
+  S.loggingOut = true;
+  Object.values(store.t).forEach(clearTimeout);
+  try { if (G.token && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(G.token, () => {}); } catch(e) {}
+  try { Object.keys(localStorage).filter(k => k.startsWith('mosa3di_')).forEach(k => localStorage.removeItem(k)); } catch(e) {}
+  toast('تم تسجيل الخروج');
+  setTimeout(() => location.reload(), 700);
 }
 
 /* ---------- الأحداث ---------- */
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, id = el.dataset.id;
-  if (a !== 'deltask' && a !== 'clearchat') S.ui.confirm = null;
+  if (a !== 'deltask' && a !== 'clearchat' && a !== 'logout') S.ui.confirm = null;
   switch (a) {
     case 'menu': renderDrawer(); $('#app').classList.add('menu'); break;
     case 'closemenu': $('#app').classList.remove('menu'); break;
@@ -1266,6 +1275,7 @@ document.addEventListener('click', e => {
     case 'canceltask': S.ui.taskForm = null; renderTasks(); break;
     case 'toggletask': { const t = S.state.tasks.find(x => x.id === id); t.on = !t.on; if (t.on && !t.lastRun) t.lastRun = Date.now(); saveState(); renderTasks(); renderDrawer(); break; }
     case 'runtask': runTask(id); break;
+    case 'logout': if (S.ui.confirm === 'logout') logout(); else { S.ui.confirm = 'logout'; renderSettings(); } break;
     case 'opentask': S.ui.openTask = S.ui.openTask === id ? null : id; renderTasks(); break;
     case 'deltask': if (S.ui.confirm === id) { S.state.tasks = S.state.tasks.filter(x => x.id !== id); S.ui.confirm = null; saveState(); toast('حُذفت المهمة'); } else S.ui.confirm = id; renderTasks(); renderDrawer(); break;
     case 'perm': S.state.perms[id] = +el.dataset.l; saveState(); renderPerms(); break;

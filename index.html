@@ -258,6 +258,42 @@ body{font-weight:400;letter-spacing:0}
 .nav button[aria-current="page"] .cnt{background:var(--card);color:var(--accInk)}
 .dfoot{display:flex;align-items:center;gap:10px;margin:0 14px;padding:14px 16px;border-radius:20px;background:var(--accSoft);color:var(--accInk);font-size:14px}
 .faq summary{cursor:pointer;font-weight:600;font-size:15px;min-height:28px;display:flex;align-items:center}
+/* ===== قوائم مرتبة واحترافية ===== */
+.glabel{font-size:13px;font-weight:500;color:var(--mut);padding:0 8px;margin:6px 0 -6px}
+.group{background:var(--card);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.group>form{display:flex;flex-direction:column}
+.group>form.grow{flex-direction:row}
+.grow{display:flex;align-items:center;gap:12px;padding:11px 14px;min-height:56px;position:relative;background:transparent;border:none;width:100%;text-align:right;color:var(--ink)}
+.group>.grow+.grow::before,.group>form>.grow+.grow::before,.group>.gdetail+.grow::before,.group>form+.grow::before,.group>.grow+form>.grow:first-child::before{content:"";position:absolute;top:0;right:60px;left:0;border-top:1px solid var(--line2)}
+.gi{width:34px;height:34px;border-radius:10px;background:var(--accSoft);color:var(--accBg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gi svg{width:18px;height:18px}
+.gt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:right;background:none;border:none;padding:0;color:var(--ink)}
+.gt b{font-size:15px;font-weight:500}
+.gt span{font-size:12.5px;color:var(--mut);line-height:1.5}
+.gl{width:72px;flex-shrink:0;font-size:14px;color:var(--mut)}
+.ginp{flex:1;min-width:0;border:none;background:transparent;font-size:15px;outline:none;padding:6px 0;resize:none;line-height:1.6;color:var(--ink)}
+.ginp::placeholder{color:var(--mut);opacity:.75}
+.gsel{border:none;background:var(--bg);border-radius:10px;padding:8px 10px;font-size:14px;color:var(--ink);max-width:46%;cursor:pointer}
+.gsel:focus{outline:2px solid var(--accSoft)}
+.gbtn{height:38px;border-radius:11px;border:none;background:var(--bg);color:var(--ink);font-size:14px;font-weight:500;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0}
+.gbtn.pri{background:var(--accBg);color:#fff}
+.gbtn.danger{color:var(--bad)}
+.gbtn.wide{width:100%;color:var(--accBg)}
+.gbtn svg{width:16px;height:16px}
+.gbtn:disabled{opacity:.5}
+.gadd .gt b{color:var(--accBg);font-weight:600}
+.gopen{cursor:pointer}
+.gdetail{padding:0 14px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.gdetail p{margin:0;font-size:13.5px;line-height:1.7;color:var(--ink2);background:var(--bg);border-radius:12px;padding:10px 12px}
+.gfoot{font-size:12.5px;color:var(--mut);padding:0 10px;margin:-6px 0 4px;line-height:1.7}
+.gfoot a{color:var(--acc)}
+.muted-row{opacity:.6}
+.pav{width:84px;height:84px;border-radius:50%;background:var(--accBg);color:#fff;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:600;box-shadow:0 8px 24px rgba(194,37,92,.22)}
+.tg{width:46px;height:28px;border-radius:14px}
+.tg span{width:22px;height:22px;border-radius:11px}
+.scroll{gap:14px}
+.scroll>*{flex-shrink:0}
+.top h1{font-size:18px;font-weight:600}
 </style>
 </head>
 <body>
@@ -1012,106 +1048,125 @@ function renderAttach(){
 }
 function grow(t){ t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; }
 
+/* ---------- عناصر القوائم المرتبة ---------- */
+const I2 = {
+  key: P('<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/>'),
+  spark: P('<path d="M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'),
+  gauge: P('<path d="M12 14l4-4"/><path d="M3.3 16a9 9 0 1 1 17.4 0"/>'),
+  sun: P('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  text: P('<path d="M4 6h16M4 12h16M4 18h10"/>'),
+  folder: P('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>'),
+  store: P('<path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/>'),
+  chat2: P('<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>'),
+  globe: P('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
+  google: P('<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 12h-8"/>')
+};
+const gi = (icon, tone) => `<span class="gi"${tone ? ` style="background:${tone[0]};color:${tone[1]}"` : ''}>${icon}</span>`;
+const opt = (v, label, cur) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${label}</option>`;
+const sel = (attr, opts, cur, label) => `<select class="gsel" ${attr} aria-label="${label}">${opts.map(o => opt(o[0], o[1], cur)).join('')}</select>`;
+
 /* ---------- الملف الشخصي ---------- */
 function renderProfile(){
   const p = S.state.profile, n = displayName();
   $('#screen').innerHTML = header('الملف الشخصي') + `
   <div class="scroll">
-    <div class="center"><div class="big-av">${esc((n || 'م').trim().charAt(0))}</div><b style="font-size:20px">${esc(n || 'اكتب اسمك')}</b>${p.country ? `<span style="font-size:13px;color:var(--mut)">${esc(p.country)}</span>` : ''}</div>
-    <div class="sec"><h2>المعلومات الأساسية</h2><div class="card" style="display:flex;flex-direction:column;gap:12px">
-      <div class="field"><label for="pf_name">الاسم</label><input class="inp" id="pf_name" data-bind="profile.name" value="${esc(p.name)}" placeholder="${esc(S.meName || 'اسمك')}"></div>
-      <div class="grid2">
-        <div class="field"><label for="pf_country">البلد</label><input class="inp" id="pf_country" data-bind="profile.country" value="${esc(p.country)}" placeholder="مثل: جيبوتي"></div>
-        <div class="field"><label for="pf_tz">المنطقة الزمنية</label><input class="inp" id="pf_tz" data-bind="profile.tz" value="${esc(p.tz)}" placeholder="مثل: توقيت جيبوتي +3"></div>
-      </div>
-      <div class="field"><label for="pf_about">نبذة يعرفها المساعد عنك</label><textarea class="inp" id="pf_about" data-bind="profile.about" rows="3" placeholder="عملك، اهتماماتك، طريقة تفضّلها في الردود…">${esc(p.about)}</textarea></div>
-    </div></div>
-    <div class="sec"><h2>مشاريعي</h2><div class="card" style="display:flex;flex-direction:column;gap:12px">
-      <div class="chips">${(p.projects || []).map((x, i) => `<span class="chipx">${esc(x)}<button data-act="delproj" data-i="${i}" aria-label="حذف ${esc(x)}">${I.x.replace('<svg','<svg width="14" height="14"')}</button></span>`).join('') || '<span class="muted">لا توجد مشاريع بعد.</span>'}</div>
-      <form class="row" data-form="proj" style="gap:8px"><label for="newproj" class="sr">مشروع جديد</label><input class="inp" id="newproj" placeholder="اسم مشروع جديد"><button class="btn pri" type="submit">إضافة</button></form>
-    </div></div>
-    <div class="sec"><h2>جهات الاتصال المهمة</h2>
-      <p class="muted" style="padding:0 4px">يستخدمها المساعد حين تقول مثلًا: «أرسل لشريكي».</p>
-      ${(p.contacts || []).length ? `<div class="list">${p.contacts.map((c, i) => `<div class="li"><span class="av" style="background:var(--okSoft);color:var(--ok)">${esc(c.name.charAt(0))}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><b style="font-size:14px">${esc(c.name)}${c.relation ? ` <span style="font-weight:400;color:var(--mut);font-size:12px">· ${esc(c.relation)}</span>` : ''}</b><span dir="ltr" style="font-size:12px;color:var(--mut);text-align:right">${esc(c.email || 'بلا بريد')}</span></span><button class="cbtn" data-act="delcontact" data-i="${i}" aria-label="حذف ${esc(c.name)}">${I.trash}</button></div>`).join('')}</div>` : ''}
-      <form class="card" data-form="contact" style="display:flex;flex-direction:column;gap:10px">
-        <div class="grid2"><div class="field"><label for="c_name">الاسم</label><input class="inp" id="c_name" required></div><div class="field"><label for="c_rel">العلاقة</label><input class="inp" id="c_rel" placeholder="أخ، صديق، شريك…"></div></div>
-        <div class="field"><label for="c_mail">البريد الإلكتروني</label><input class="inp" id="c_mail" type="email" dir="ltr"></div>
-        <button class="btn" type="submit">${I.plus}إضافة جهة اتصال</button>
+    <div class="center" style="padding:8px 0 4px"><div class="pav">${esc((n || 'م').trim().charAt(0))}</div><b style="font-size:19px">${esc(n || 'اكتب اسمك')}</b>${p.country ? `<span style="font-size:13px;color:var(--mut)">${esc(p.country)}</span>` : ''}</div>
+    <div class="glabel">المعلومات الأساسية</div>
+    <div class="group">
+      <label class="grow"><span class="gl">الاسم</span><input class="ginp" data-bind="profile.name" value="${esc(p.name)}" placeholder="اسمك"></label>
+      <label class="grow"><span class="gl">البلد</span><input class="ginp" data-bind="profile.country" value="${esc(p.country)}" placeholder="مثل: جيبوتي"></label>
+      <label class="grow"><span class="gl">التوقيت</span><input class="ginp" data-bind="profile.tz" value="${esc(p.tz)}" placeholder="مثل: جيبوتي +3"></label>
+    </div>
+    <div class="glabel">نبذة يعرفها المساعد عنك</div>
+    <div class="group"><div class="grow"><textarea class="ginp" data-bind="profile.about" rows="3" placeholder="عملك، اهتماماتك، طريقة تفضّلها في الردود…" aria-label="نبذة عنك">${esc(p.about)}</textarea></div></div>
+    <div class="glabel">مشاريعي</div>
+    <div class="group">
+      ${(p.projects || []).length ? `<div class="grow" style="flex-wrap:wrap;gap:8px">${p.projects.map((x, i) => `<span class="chipx">${esc(x)}<button data-act="delproj" data-i="${i}" aria-label="حذف ${esc(x)}">${I.x.replace('<svg','<svg width="14" height="14"')}</button></span>`).join('')}</div>` : ''}
+      <form class="grow" data-form="proj"><label for="newproj" class="sr">مشروع جديد</label><input class="ginp" id="newproj" placeholder="أضف مشروعًا…"><button class="gbtn" type="submit">إضافة</button></form>
+    </div>
+    <div class="glabel">جهات الاتصال المهمة</div>
+    <div class="group">
+      ${(p.contacts || []).map((c, i) => `<div class="grow">${gi(`<b style="font-size:14px">${esc(c.name.charAt(0))}</b>`)}<span class="gt"><b>${esc(c.name)}${c.relation ? ` <span style="display:inline;font-size:12px">· ${esc(c.relation)}</span>` : ''}</b><span dir="ltr" style="text-align:right">${esc(c.email || 'بلا بريد')}</span></span><button class="cbtn" data-act="delcontact" data-i="${i}" aria-label="حذف ${esc(c.name)}">${I.trash}</button></div>`).join('')}
+      <form data-form="contact">
+        <label class="grow"><span class="gl">الاسم</span><input class="ginp" id="c_name" placeholder="اسم جهة الاتصال"></label>
+        <label class="grow"><span class="gl">العلاقة</span><input class="ginp" id="c_rel" placeholder="أخ، صديق، شريك…"></label>
+        <label class="grow"><span class="gl">البريد</span><input class="ginp" id="c_mail" type="email" dir="ltr" placeholder="name@example.com"></label>
+        <div class="grow"><button class="gbtn wide" type="submit">${I.plus}إضافة جهة اتصال</button></div>
       </form>
     </div>
+    <p class="gfoot">يستخدمها المساعد حين تقول مثلًا: «أرسل لشريكي».</p>
   </div>`;
 }
 
 /* ---------- المهام ---------- */
 function renderTasksIfOpen(){ if (S.screen === 'tasks') renderTasks(); }
 function taskForm(f){
-  const hours = Array.from({length:24}, (_, h) => `<option value="${h}" ${+f.hour === h ? 'selected' : ''}>${hourLabel(h)}</option>`).join('');
-  return `<form class="card" data-form="task" style="display:flex;flex-direction:column;gap:12px">
-    <b style="font-size:15px">${f.id ? 'تعديل المهمة' : 'مهمة متكررة جديدة'}</b>
-    <div class="field"><label for="tf_title">العنوان</label><input class="inp" id="tf_title" required value="${esc(f.title || '')}" placeholder="مثل: تذكير بمتابعة الشركاء"></div>
-    <div class="field"><label for="tf_prompt">ماذا يفعل المساعد؟</label><textarea class="inp" id="tf_prompt" rows="4" required placeholder="اكتب التعليمات كما لو تطلبها في المحادثة">${esc(f.prompt || '')}</textarea></div>
-    <div class="grid2">
-      <div class="field"><label for="tf_freq">التكرار</label><select class="inp" id="tf_freq"><option value="daily" ${f.freq !== 'weekly' ? 'selected' : ''}>يوميًا</option><option value="weekly" ${f.freq === 'weekly' ? 'selected' : ''}>أسبوعيًا</option></select></div>
-      <div class="field"><label for="tf_hour">الوقت</label><select class="inp" id="tf_hour">${hours}</select></div>
-    </div>
-    <div class="field" id="tf_daywrap" style="${f.freq === 'weekly' ? '' : 'display:none'}"><label for="tf_day">اليوم</label><select class="inp" id="tf_day">${DAYS.map((d, i) => `<option value="${i}" ${+f.weekday === i ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
-    <div class="row" style="gap:8px"><button class="btn pri" type="submit" style="flex:1">حفظ</button><button class="btn" type="button" data-act="canceltask" style="flex:1">إلغاء</button></div>
+  return `<form class="group" data-form="task">
+    <div class="grow"><b style="font-size:15px">${f.id ? 'تعديل المهمة' : 'مهمة جديدة'}</b></div>
+    <label class="grow"><span class="gl">العنوان</span><input class="ginp" id="tf_title" value="${esc(f.title || '')}" placeholder="مثل: ملخص الأخبار"></label>
+    <div class="grow"><textarea class="ginp" id="tf_prompt" rows="3" placeholder="ماذا يفعل المساعد؟ اكتبها كما تطلبها في المحادثة" aria-label="تعليمات المهمة">${esc(f.prompt || '')}</textarea></div>
+    <div class="grow"><span class="gl">التكرار</span><span style="flex:1"></span><select class="gsel" id="tf_freq" aria-label="التكرار">${opt('daily', 'يوميًا', f.freq)}${opt('weekly', 'أسبوعيًا', f.freq)}</select></div>
+    <div class="grow" id="tf_daywrap" style="${f.freq === 'weekly' ? '' : 'display:none'}"><span class="gl">اليوم</span><span style="flex:1"></span><select class="gsel" id="tf_day" aria-label="اليوم">${DAYS.map((d, i) => opt(i, d, f.weekday)).join('')}</select></div>
+    <div class="grow"><span class="gl">الوقت</span><span style="flex:1"></span><select class="gsel" id="tf_hour" aria-label="الوقت">${Array.from({length:24}, (_, h) => opt(h, hourLabel(h), f.hour)).join('')}</select></div>
+    <div class="grow" style="gap:8px"><button class="gbtn pri" type="submit" style="flex:1">حفظ</button><button class="gbtn" type="button" data-act="canceltask" style="flex:1">إلغاء</button></div>
   </form>`;
 }
 function renderTasks(){
   const f = S.ui.taskForm;
   $('#screen').innerHTML = header('المهام المتكررة') + `
   <div class="scroll">
-    <p class="muted" style="padding:0 4px">ينفّذها المساعد في موعدها حين تفتح التطبيق، أو متى ضغطت «تشغيل الآن». أي بريد يجهّزه يظهر في «بانتظار موافقتك» إلا إذا جعلت صلاحية جيميل «تلقائي».</p>
-    ${f ? taskForm(f) : `<button class="btn pri wide" data-act="newtask" style="height:50px">${I.plus}مهمة متكررة جديدة</button>`}
+    ${f ? taskForm(f) : `<div class="group"><button class="grow gadd" data-act="newtask">${gi(I.plus)}<span class="gt"><b>مهمة متكررة جديدة</b></span></button></div>`}
+    <div class="glabel">مهامك</div>
+    <div class="group">
     ${S.state.tasks.map(t => {
-      const run = S.running.has(t.id), due = isDue(t), conf = S.ui.confirm === t.id;
-      return `<div class="card task" style="display:flex;flex-direction:column;gap:12px">
-        <div class="row" style="align-items:flex-start">
-          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><b style="font-size:15px">${esc(t.title)}</b><span style="font-size:12px;color:var(--mut);line-height:1.6">${esc(t.prompt.length > 90 ? t.prompt.slice(0, 90) + '…' : t.prompt)}</span></div>
+      const run = S.running.has(t.id), due = isDue(t), open = S.ui.openTask === t.id, conf = S.ui.confirm === t.id;
+      const st = run ? '<span class="okt">يعمل الآن…</span>' : due ? '<span class="badt">حان وقتها</span>' : '';
+      return `<div class="grow">
+          ${gi(I.repeat)}
+          <button class="gt gopen" data-act="opentask" data-id="${t.id}" aria-expanded="${open}"><b>${esc(t.title)}</b><span>${whenText(t)} ${st}</span></button>
           <button class="tg" data-act="toggletask" data-id="${t.id}" aria-pressed="${t.on}" aria-label="تشغيل أو إيقاف ${esc(t.title)}"><span></span></button>
         </div>
-        <div class="meta">${I.clock}<span style="flex:1">${whenText(t)}</span>${run ? '<span class="okt">يعمل الآن…</span>' : due ? '<span class="badt">حان وقتها</span>' : t.on ? '<span class="okt">مفعّلة</span>' : '<span style="font-size:12px;color:var(--mut)">متوقفة</span>'}</div>
-        <div class="row" style="gap:8px">
-          <button class="btn" data-act="runtask" data-id="${t.id}" ${run ? 'disabled' : ''} style="flex:1">${I.play.replace('<svg','<svg width="16" height="16"')}تشغيل الآن</button>
-          <button class="btn" data-act="edittask" data-id="${t.id}" aria-label="تعديل ${esc(t.title)}">${I.edit}</button>
-          <button class="btn danger" data-act="deltask" data-id="${t.id}" aria-label="${conf ? 'تأكيد الحذف' : 'حذف ' + esc(t.title)}">${conf ? 'تأكيد الحذف' : I.trash}</button>
-        </div>
-        ${t.lastError ? `<div class="badt">${esc(t.lastError)}</div>` : ''}
-        ${t.lastResult ? `<details class="res"><summary>آخر نتيجة · ${new Date(t.lastRun).toLocaleString('ar', {dateStyle:'medium', timeStyle:'short'})}</summary><div class="bub" style="padding:8px 0 0;border:none;background:none">${md(t.lastResult)}</div></details>` : ''}
-      </div>`;
-    }).join('') || '<p class="muted" style="text-align:center">لا توجد مهام بعد.</p>'}
+        ${open ? `<div class="gdetail">
+          <p>${esc(t.prompt)}</p>
+          <div class="row" style="gap:8px">
+            <button class="gbtn pri" data-act="runtask" data-id="${t.id}" ${run ? 'disabled' : ''} style="flex:1">${I.play.replace('<svg','<svg width="15" height="15"')}تشغيل الآن</button>
+            <button class="gbtn" data-act="edittask" data-id="${t.id}">تعديل</button>
+            <button class="gbtn danger" data-act="deltask" data-id="${t.id}">${conf ? 'تأكيد الحذف' : 'حذف'}</button>
+          </div>
+          ${t.lastError ? `<div class="badt">${esc(t.lastError)}</div>` : ''}
+          ${t.lastResult ? `<details class="res"><summary>آخر نتيجة · ${new Date(t.lastRun).toLocaleString('ar', {dateStyle:'medium', timeStyle:'short'})}</summary><div class="bub" style="padding:8px 0 0;border:none;background:none">${md(t.lastResult)}</div></details>` : ''}
+        </div>` : ''}`;
+    }).join('') || '<div class="grow"><span class="gt"><span>لا توجد مهام بعد.</span></span></div>'}
+    </div>
+    <p class="gfoot">تعمل المهام في موعدها حين تفتح التطبيق، ويمكنك تشغيل أي مهمة متى شئت. اضغط على المهمة لعرض تفاصيلها.</p>
   </div>`;
 }
 
 /* ---------- الصلاحيات ---------- */
 function renderPerms(){
   const p = S.state.perms, st = S.state.settings, gOn = gConfigured() && st.gConnected, tst = S.ui.test;
-  const segBtns = (id, levels) => `<div class="seg" role="radiogroup" aria-label="الصلاحية" style="grid-template-columns:repeat(${levels.length},minmax(0,1fr))">${levels.map(l => `<button role="radio" aria-checked="${p[id] === l}" data-act="perm" data-id="${id}" data-l="${l}">${LV[l]}</button>`).join('')}</div>`;
   $('#screen').innerHTML = header('الصلاحيات') + `
   <div class="scroll">
-    <div class="note">${I.shield}<span><b>قراءة فقط:</b> يطّلع ولا يغيّر شيئًا. <b>بموافقتك:</b> يجهّز الرسالة وأنت تضغط إرسال. <b>تلقائي:</b> يرسل مباشرة حين تطلب منه.</span></div>
-    <div class="card" style="display:flex;flex-direction:column;gap:12px">
-      <div class="row"><span class="svc" style="background:var(--accSoft);color:var(--accInk)">${I.search.replace('<svg','<svg width="20" height="20"')}</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">البحث في الإنترنت</b><span style="font-size:12px;color:var(--mut)">أخبار وأسعار ومعلومات حديثة</span></div>
+    <div class="glabel">عام</div>
+    <div class="group">
+      <div class="grow">${gi(I2.globe)}<span class="gt"><b>البحث في الإنترنت</b><span>أخبار وأسعار ومعلومات حديثة</span></span>
         <button class="tg" data-act="perm" data-id="web" data-l="${p.web ? 0 : 1}" aria-pressed="${!!p.web}" aria-label="البحث في الإنترنت"><span></span></button></div>
     </div>
-    <div class="card" style="display:flex;flex-direction:column;gap:14px">
-      <div class="row"><span class="svc" style="background:var(--badSoft);color:var(--bad)">G</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">حساب جوجل</b><span class="${gOn ? 'okt' : 'badt'}">${gOn ? 'مربوط' : gConfigured() ? 'غير مربوط' : 'يحتاج معرّف جوجل من الإعدادات'}</span></div>
-        ${gConfigured() ? `<button class="btn ${gOn ? '' : 'pri'}" data-act="gconnect" style="height:40px">${gOn ? 'إعادة الربط' : 'ربط حساب جوجل'}</button>` : `<button class="btn" data-act="go" data-to="settings" style="height:40px">الإعدادات</button>`}</div>
-      <div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:14px">جيميل</b>${segBtns('gmail', [0,1,2,3])}</div>
-      <div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:14px">جوجل درايف</b>${segBtns('drive', [0,1])}</div>
-      ${gOn ? `<button class="btn ghost" data-act="test" data-id="google" style="align-self:flex-start">اختبار الاتصال</button>` : ''}
-      ${tst.google ? `<span class="${tst.google.ok ? 'okt' : 'badt'}">${esc(tst.google.text)}</span>` : ''}
+    <div class="glabel">حساب جوجل</div>
+    <div class="group">
+      <div class="grow">${gi(I2.google)}<span class="gt"><b>الحساب</b><span class="${gOn ? 'okt' : ''}">${gOn ? 'مربوط' : gConfigured() ? 'غير مربوط' : 'يحتاج معرّف جوجل من الإعدادات'}</span></span>
+        ${gConfigured() ? `<button class="gbtn ${gOn ? '' : 'pri'}" data-act="gconnect">${gOn ? 'إعادة الربط' : 'ربط'}</button>` : `<button class="gbtn" data-act="go" data-to="settings">الإعدادات</button>`}</div>
+      <div class="grow">${gi(I.mail)}<span class="gt"><b>جيميل</b><span>القراءة والمسودات والإرسال</span></span>${sel('data-perm="gmail"', [[0,'لا شيء'],[1,'قراءة فقط'],[2,'بموافقتك'],[3,'تلقائي']], p.gmail, 'صلاحية جيميل')}</div>
+      <div class="grow">${gi(I2.folder)}<span class="gt"><b>جوجل درايف</b><span>البحث في ملفاتك</span></span>${sel('data-perm="drive"', [[0,'لا شيء'],[1,'قراءة فقط']], p.drive, 'صلاحية درايف')}</div>
+      ${gOn ? `<div class="grow"><button class="gbtn" data-act="test" data-id="google">اختبار الاتصال</button>${tst.google ? `<span class="${tst.google.ok ? 'okt' : 'badt'}" style="flex:1">${esc(tst.google.text)}</span>` : ''}</div>` : ''}
     </div>
-    <div class="card row" style="border:1px dashed var(--line)">
-      <span class="svc" style="background:var(--okSoft);color:var(--ok)">ش</span>
-      <div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">شوبيفاي</b><span style="font-size:12px;color:var(--mut);line-height:1.6">يحتاج خادمًا صغيرًا لأن شوبيفاي لا يسمح بالاتصال المباشر من التطبيق. سنضيفه في المرحلة التالية.</span></div>
+    <p class="gfoot"><b>قراءة فقط:</b> يطّلع ولا يغيّر. <b>بموافقتك:</b> يجهّز الرسالة وأنت تضغط إرسال. <b>تلقائي:</b> يرسل حين تطلب منه.</p>
+    <div class="glabel">قريبًا</div>
+    <div class="group">
+      <div class="grow muted-row">${gi(I2.store)}<span class="gt"><b>شوبيفاي</b><span>يحتاج خادمًا صغيرًا، سيُضاف لاحقًا</span></span></div>
+      <div class="grow muted-row">${gi(I2.chat2)}<span class="gt"><b>واتساب</b><span>لا يوجد ربط رسمي بواتساب الشخصي</span></span></div>
     </div>
-    <div class="card row" style="border:1px dashed var(--line)">
-      <span class="svc" style="background:var(--okSoft);color:var(--ok)">و</span>
-      <div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">واتساب</b><span style="font-size:12px;color:var(--mut);line-height:1.6">غير متاح: لا يوجد ربط رسمي بواتساب الشخصي.</span></div>
-    </div>
-    <div class="card"><b style="font-size:14px">أمان</b><p class="muted" style="margin-top:4px">المساعد لا يحذف رسائل أو ملفات ولا يدفع أي شيء. ومفاتيحك محفوظة على جهازك فقط.</p></div>
+    <p class="gfoot">المساعد لا يحذف رسائل أو ملفات ولا يدفع أي شيء، ومفاتيحك محفوظة على جهازك فقط.</p>
   </div>`;
 }
 async function testService(){
@@ -1126,35 +1181,34 @@ function seg(name, label, opts, cur){
   return `<div class="seg" role="radiogroup" aria-label="${label}" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))">${opts.map(o => `<button role="radio" aria-checked="${cur === o[0]}" data-act="set" data-k="${name}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
 }
 function renderSettings(){
-  const st = S.state.settings, conf = S.ui.confirm;
+  const st = S.state.settings, conf = S.ui.confirm, gem = provider() === 'gemini';
+  const has = gem ? geminiKey() : claudeKey();
   $('#screen').innerHTML = header('الإعدادات') + `
   <div class="scroll">
-    <div class="sec"><h2>عقل المساعد</h2>${seg('provider', 'عقل المساعد', [['gemini','Gemini (مجاني)'],['claude','Claude']], provider())}</div>
-    ${provider() === 'gemini' ? `<div class="sec"><h2>مفتاح Gemini</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <div class="field"><label for="st_gkey">المفتاح الخاص بك</label><input class="inp" id="st_gkey" data-bind="settings.gemKey" type="password" dir="ltr" autocomplete="off" value="${esc(st.gemKey || '')}" placeholder="AIza..."></div>
-      <p class="muted">تحصل عليه مجانًا من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>. يُحفظ على هاتفك فقط.</p>
-      ${geminiKey() ? '<span class="okt">المفتاح محفوظ</span>' : '<span class="badt">لا يوجد مفتاح بعد</span>'}
-    </div></div>` : ''}
-    <div class="sec" style="${provider() === 'claude' ? '' : 'display:none'}"><h2>مفتاح Claude</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <div class="field"><label for="st_key">المفتاح الخاص بك</label><input class="inp" id="st_key" data-bind="settings.apiKey" type="password" dir="ltr" autocomplete="off" value="${esc(st.apiKey || '')}" placeholder="sk-ant-..."></div>
-      <p class="muted">تحصل عليه من <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. يُحفظ على هاتفك فقط ولا يُرسل إلا إلى Claude.</p>
-      ${claudeKey() ? '<span class="okt">المفتاح محفوظ</span>' : '<span class="badt">لا يوجد مفتاح بعد</span>'}
-    </div></div>
-    <div class="sec"><h2>معرّف جوجل (لجيميل ودرايف)</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <div class="field"><label for="st_gid">Client ID</label><input class="inp" id="st_gid" data-bind="settings.gClientId" dir="ltr" autocomplete="off" value="${esc(st.gClientId || '')}" placeholder="xxxx.apps.googleusercontent.com"></div>
-      <p class="muted">اختياري. طريقة الحصول عليه في «مساعدة ودعم».</p>
-    </div></div>
-    <div class="sec"><h2>المظهر</h2>${seg('theme', 'المظهر', [['light','فاتح'],['dark','داكن'],['auto','تلقائي']], st.theme)}</div>
-    <div class="sec"><h2>طول الردود</h2>${seg('length', 'طول الردود', [['short','قصيرة'],['long','مفصّلة']], st.length)}</div>
-    <div class="sec"><h2>قوة المساعد</h2>${seg('tier', 'قوة المساعد', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier)}<p class="muted" style="padding:0 4px">«سريع» أخف وأسرع، و«قوي» أفضل للتحليل والبرمجة.</p></div>
-    <div class="sec"><h2>البيانات</h2>
-      <div class="card"><p class="muted">كل بياناتك محفوظة على هذا الجهاز فقط.</p></div>
-      <div class="list">
-        <div class="li"><span style="flex:1;font-size:14px">مسح سجل المحادثة</span><button class="btn danger" data-act="clearchat">${conf === 'chat' ? 'تأكيد المسح' : 'مسح'}</button></div>
-        <div class="li"><span style="flex:1;font-size:14px">مسح سجل الموافقات القديمة</span><button class="btn" data-act="clearpend">مسح</button></div>
-      </div>
+    <div class="glabel">عقل المساعد</div>
+    <div class="group">
+      <div class="grow">${gi(I2.spark)}<span class="gt"><b>النموذج</b></span>${sel('data-set="provider"', [['gemini','Gemini (مجاني)'],['claude','Claude']], provider(), 'عقل المساعد')}</div>
+      <div class="grow">${gi(I2.key)}<span class="gt"><b>مفتاح ${gem ? 'Gemini' : 'Claude'}</b><span class="${has ? 'okt' : 'badt'}">${has ? 'محفوظ' : 'لا يوجد مفتاح بعد'}</span></span></div>
+      <div class="grow"><input class="ginp" data-bind="settings.${gem ? 'gemKey' : 'apiKey'}" type="password" dir="ltr" autocomplete="off" value="${esc(gem ? (st.gemKey || '') : (st.apiKey || ''))}" placeholder="${gem ? 'AIza…' : 'sk-ant-…'}" aria-label="المفتاح"></div>
+      <div class="grow">${gi(I2.gauge)}<span class="gt"><b>قوة المساعد</b></span>${sel('data-set="tier"', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier, 'قوة المساعد')}</div>
     </div>
-    <p class="muted" style="text-align:center;padding:8px 0">مساعدي · الإصدار 1.0</p>
+    <p class="gfoot">${gem ? 'احصل على مفتاح مجاني من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.' : 'احصل على المفتاح من <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.'} يُحفظ على جهازك فقط.</p>
+    <div class="glabel">المظهر والردود</div>
+    <div class="group">
+      <div class="grow">${gi(I2.sun)}<span class="gt"><b>المظهر</b></span>${sel('data-set="theme"', [['light','فاتح'],['dark','داكن'],['auto','تلقائي']], st.theme, 'المظهر')}</div>
+      <div class="grow">${gi(I2.text)}<span class="gt"><b>طول الردود</b></span>${sel('data-set="length"', [['short','قصيرة'],['long','مفصّلة']], st.length, 'طول الردود')}</div>
+    </div>
+    <div class="glabel">حساب جوجل (اختياري)</div>
+    <div class="group">
+      <div class="grow"><input class="ginp" data-bind="settings.gClientId" dir="ltr" autocomplete="off" value="${esc(st.gClientId || '')}" placeholder="Client ID: xxxx.apps.googleusercontent.com" aria-label="معرّف جوجل"></div>
+    </div>
+    <p class="gfoot">لربط جيميل ودرايف. طريقة الحصول عليه في «مساعدة ودعم».</p>
+    <div class="glabel">البيانات</div>
+    <div class="group">
+      <div class="grow">${gi(I.trash, ['var(--badSoft)','var(--bad)'])}<span class="gt"><b>مسح سجل المحادثة</b></span><button class="gbtn danger" data-act="clearchat">${conf === 'chat' ? 'تأكيد' : 'مسح'}</button></div>
+      <div class="grow">${gi(I.shield)}<span class="gt"><b>مسح الموافقات القديمة</b></span><button class="gbtn" data-act="clearpend">مسح</button></div>
+    </div>
+    <p class="gfoot" style="text-align:center">مساعدي · الإصدار 1.1 · كل بياناتك على هذا الجهاز فقط</p>
   </div>`;
 }
 
@@ -1212,6 +1266,7 @@ document.addEventListener('click', e => {
     case 'canceltask': S.ui.taskForm = null; renderTasks(); break;
     case 'toggletask': { const t = S.state.tasks.find(x => x.id === id); t.on = !t.on; if (t.on && !t.lastRun) t.lastRun = Date.now(); saveState(); renderTasks(); renderDrawer(); break; }
     case 'runtask': runTask(id); break;
+    case 'opentask': S.ui.openTask = S.ui.openTask === id ? null : id; renderTasks(); break;
     case 'deltask': if (S.ui.confirm === id) { S.state.tasks = S.state.tasks.filter(x => x.id !== id); S.ui.confirm = null; saveState(); toast('حُذفت المهمة'); } else S.ui.confirm = id; renderTasks(); renderDrawer(); break;
     case 'perm': S.state.perms[id] = +el.dataset.l; saveState(); renderPerms(); break;
     case 'test': testService(id); break;
@@ -1234,6 +1289,8 @@ document.addEventListener('input', e => {
 document.addEventListener('change', e => {
   const b = e.target.dataset && e.target.dataset.bind;
   if (b) { const [k, f] = b.split('.'); S.state[k][f] = e.target.value.trim(); if (f === 'gClientId') { S.state.settings.gConnected = false; if (gConfigured()) loadGis().catch(() => {}); } saveState(); renderDrawer(); if (k === 'settings') renderSettings(); }
+  if (e.target.dataset && e.target.dataset.set) { S.state.settings[e.target.dataset.set] = e.target.value; S.gemModelIdx = 0; saveState(); applyTheme(); renderSettings(); renderDrawer(); renderStatus(); }
+  if (e.target.dataset && e.target.dataset.perm) { S.state.perms[e.target.dataset.perm] = +e.target.value; saveState(); renderPerms(); }
   if (e.target.id === 'filein') {
     const file = e.target.files && e.target.files[0]; e.target.value = '';
     if (!file) return;

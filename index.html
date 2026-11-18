@@ -682,11 +682,11 @@ function systemPrompt(){
     st.length === 'long' ? 'أسلوب الردود: مفصّل ومنظم.' : 'أسلوب الردود: قصير ومباشر.'
   ].join('\n');
 }
-const GEM = { quick:['gemini-3.5-flash-lite','gemini-flash-lite-latest','gemini-2.5-flash-lite'], default:['gemini-3.6-flash','gemini-flash-latest','gemini-2.5-flash'], complex:['gemini-3.7-flash','gemini-3.6-flash','gemini-flash-latest','gemini-2.5-flash'] };
+const GEM = { quick:['gemini-flash-lite-latest','gemini-3.5-flash-lite','gemini-2.5-flash-lite','gemini-flash-latest','gemini-2.5-flash'], default:['gemini-flash-latest','gemini-3.6-flash','gemini-3.5-flash','gemini-2.5-flash','gemini-flash-lite-latest','gemini-2.5-flash-lite'], complex:['gemini-3.7-flash','gemini-flash-latest','gemini-3.6-flash','gemini-2.5-flash','gemini-flash-lite-latest'] };
 function gemErr(status, msg){
   if (status === 400 && /API key|API_KEY/i.test(msg || '')) return 'مفتاح Gemini غير صحيح. راجعه في الإعدادات.';
   if (status === 403) return 'مفتاح Gemini لا يملك صلاحية. أنشئ مفتاحًا جديدًا من aistudio.google.com.';
-  if (status === 429) return 'وصلت إلى حد الاستخدام المجاني في Gemini. انتظر قليلًا ثم حاول، أو اختر «سريع» من الإعدادات.';
+  if (status === 429) return 'جوجل رفضت الطلب لأن حد الاستخدام المجاني لمفتاحك انتهى مؤقتًا. انتظر دقيقة ثم أعد المحاولة.' + (/limit: ?0\b/.test(msg || '') ? ' (مفتاحك لا يملك حصة مجانية لهذه النماذج، جرّب إنشاء مفتاح جديد من aistudio.google.com)' : '');
   if (status >= 500) return 'خوادم Gemini مشغولة الآن. حاول بعد قليل.';
   return 'خطأ من Gemini ' + status + ': ' + String(msg || '').slice(0, 200);
 }
@@ -707,17 +707,26 @@ async function askGemini(system, messages, opts){
     const body = { systemInstruction:{ parts:[{ text:system }] }, contents };
     if (tools.length) body.tools = [{ functionDeclarations: tools.map(x => ({ name:x.name, description:x.description, parameters:x.inputSchema })) }];
     else if (S.state.perms.web) body.tools = [{ google_search:{} }];
-    let res;
+    let res, errMsg = '', noSearch = false;
+    mi = Math.min(mi, list.length - 1);
     for (;;) {
-      const model = list[Math.min(mi, list.length - 1)];
+      const model = list[mi];
+      const b2 = Object.assign({}, body);
+      if (noSearch && b2.tools && b2.tools[0] && b2.tools[0].google_search) delete b2.tools;
       try {
-        res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':streamGenerateContent?alt=sse', { method:'POST', signal:opts.signal, headers:{ 'content-type':'application/json', 'x-goog-api-key':geminiKey() }, body:JSON.stringify(body) });
+        res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':streamGenerateContent?alt=sse', { method:'POST', signal:opts.signal, headers:{ 'content-type':'application/json', 'x-goog-api-key':geminiKey() }, body:JSON.stringify(b2) });
       } catch(e) { if (e && e.name === 'AbortError') throw e; throw new Error('لا يوجد اتصال بالإنترنت أو تعذر الوصول إلى Gemini.'); }
-      if (res.status === 404 && mi < list.length - 1) { mi++; continue; }
+      if (res.ok) break;
+      let j = {}; try { j = await res.json(); } catch(e) {}
+      errMsg = (j.error && j.error.message) || '';
+      const st = res.status;
+      if (/API key|API_KEY/i.test(errMsg)) break;
+      if (st === 429 && !noSearch && b2.tools && b2.tools[0] && b2.tools[0].google_search) { noSearch = true; continue; }
+      if ((st === 429 || st === 404 || st === 400 || st === 403 || st >= 500) && mi < list.length - 1) { mi++; noSearch = false; continue; }
       break;
     }
-    S.gemModelIdx = mi;
-    if (!res.ok) { let j = {}; try { j = await res.json(); } catch(e){} throw new Error(gemErr(res.status, j.error && j.error.message)); }
+    S.gemModelIdx = res.ok ? mi : 0;
+    if (!res.ok) throw new Error(gemErr(res.status, errMsg));
     const parts = []; let buf = '', stepText = '';
     if (full && !/\n$/.test(full)) full += '\n\n';
     const base = full;

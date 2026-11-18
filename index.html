@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>مساعدي</title>
+<title>Ora</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#C2255C">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="مساعدي">
+<meta name="apple-mobile-web-app-title" content="Ora">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -298,6 +298,9 @@ body{font-weight:400;letter-spacing:0}
 .keycard b{font-size:17px;color:var(--accInk)}
 .kicon{width:52px;height:52px;border-radius:16px;background:var(--accSoft);color:var(--accBg);display:flex;align-items:center;justify-content:center}
 .kicon svg{width:26px;height:26px}
+.ologo{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+.logo,.dlogo{background:#000 !important;overflow:hidden;padding:0}
+.logo{box-shadow:0 12px 34px rgba(110,40,200,.28)}
 </style>
 </head>
 <body>
@@ -342,7 +345,7 @@ const I = {
   info: P('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
   help: P('<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>'),
   plusc: P('<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>'),
-  logo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><ellipse cx="12" cy="7.6" rx="3.1" ry="4.8"/><ellipse cx="12" cy="16.4" rx="3.1" ry="4.8"/><ellipse cx="7.6" cy="12" rx="4.8" ry="3.1"/><ellipse cx="16.4" cy="12" rx="4.8" ry="3.1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>'
+  logo: '<img src="icon-512.png" alt="" class="ologo">'
 };
 const WAVES = '<svg class="waves" viewBox="0 0 400 170" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70C80 28 165 112 262 70S360 38 400 58V170H0Z" fill="var(--w1)"/><path d="M0 102C92 60 190 142 292 96S372 80 400 90V170H0Z" fill="var(--w2)"/><path d="M0 130C102 104 205 165 305 124S382 118 400 124V170H0Z" fill="var(--w3)"/></svg>';
 const TOPWAVE = '<svg class="topwave" viewBox="0 0 320 170" preserveAspectRatio="none" aria-hidden="true"><path d="M60 0H320V95C270 70 230 120 175 92S95 40 60 0Z" fill="var(--w1)"/><path d="M150 0H320V55C285 40 255 75 215 52S170 20 150 0Z" fill="var(--w2)"/><path d="M240 0H320V22C300 18 282 32 262 20S248 6 240 0Z" fill="var(--w3)"/></svg>';
@@ -670,7 +673,7 @@ function systemPrompt(){
   const contacts = (pr.contacts || []).map(c => '- ' + c.name + (c.relation ? ' (' + c.relation + ')' : '') + (c.email ? ': ' + c.email : '')).join('\n') || 'لا يوجد';
   const google = gConfigured() && st.gConnected;
   return [
-    'أنت "مساعدي"، المساعد الشخصي لـ ' + name + '.',
+    'أنت "Ora"، المساعد الشخصي لـ ' + name + '.',
     'تكلّم بالعربية دائمًا، ولا تخلط كلمات إنجليزية إلا الأسماء والرموز الضرورية.',
     'الوقت الآن على جهاز المستخدم: ' + now + (pr.tz ? ' (' + pr.tz + ')' : '') + '.',
     'معلومات المستخدم:', '- البلد: ' + (pr.country || 'غير محدد'), '- مشاريعه: ' + ((pr.projects || []).join('، ') || 'غير محددة'), '- نبذة: ' + (pr.about || 'لا يوجد'),
@@ -869,7 +872,7 @@ function renderDrawer(){
   $('#drawer').innerHTML = `
     <div class="dhead">${TOPWAVE}
       <span class="dlogo">${I.logo}</span>
-      <b>مساعدي</b><span class="sub">مساعدك الشخصي دائمًا</span>
+      <b>Ora</b><span class="sub">مساعدك الشخصي دائمًا</span>
     </div>
     <div class="nav">
       ${it('go', 'chat', 'home', 'الدردشة', w ? `<span class="cnt red">${w}</span>` : '')}
@@ -911,7 +914,7 @@ function renderSearch(){
 function renderAbout(){
   $('#screen').innerHTML = header('حول التطبيق') + `
   <div class="scroll">
-    <div class="center" style="padding:20px 0"><div class="halo" style="width:150px;height:150px"><span class="logo" style="width:96px;height:96px">${I.logo}</span></div><b style="font-size:22px">مساعدي</b><span class="muted">مساعدك الشخصي دائمًا</span></div>
+    <div class="center" style="padding:20px 0"><div class="halo" style="width:150px;height:150px"><span class="logo" style="width:96px;height:96px">${I.logo}</span></div><b style="font-size:22px">Ora</b><span class="muted">مساعدك الشخصي دائمًا</span></div>
     <div class="card"><p class="muted" style="color:var(--ink2)">مساعد شخصي مستقل يعمل على هاتفك بعقل Claude. يتحدث معك بالعربية، ويبحث في الإنترنت، ويقرأ بريدك وملفاتك حسب الصلاحيات التي تحددها، ويجهّز لك الرسائل وينفّذ المهام المتكررة.</p></div>
     <div class="list">
       <div class="li"><span style="flex:1">بياناتك ومفاتيحك</span><span class="muted">على هذا الجهاز فقط</span></div>
@@ -938,7 +941,7 @@ function renderScreen(){
       ${WAVES}
       <header class="top">
         <button class="icon flat" data-act="go" data-to="search" aria-label="البحث في المحادثات">${I.search}</button>
-        <div class="ttl"><b class="brand">مساعدي</b><span class="st" id="status"></span></div>
+        <div class="ttl"><b class="brand">Ora</b><span class="st" id="status"></span></div>
         <button class="icon flat" data-act="menu" aria-label="فتح القائمة">${I.menu}<span id="hbadge"></span></button>
       </header>
       <div class="scroll" id="chatScroll"><div id="notice"></div><div id="due"></div><div id="pend" class="sec"></div><div id="msgs" style="display:flex;flex-direction:column;gap:12px;flex:1"></div></div>
@@ -1255,7 +1258,7 @@ document.addEventListener('click', e => {
     case 'addapp': S.ui.addApp = !S.ui.addApp; renderPerms(); break;
     case 'pickapp': { const i = $('#newapp'); if (i) { i.value = el.dataset.name; i.focus(); } break; }
     case 'delapp': S.state.apps = S.state.apps.filter(x => x.id !== id); saveState(); renderPerms(); break;
-    case 'copyreq': { const a = S.state.apps.find(x => x.id === id); if (!a) return; const txt = 'أضف ' + a.name + ' إلى تطبيق مساعدي، فقد ربطته في الموصلات.'; if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('نُسخ الطلب. الصقه لي في محادثة Claude'), () => toast(txt)); else toast(txt); break; }
+    case 'copyreq': { const a = S.state.apps.find(x => x.id === id); if (!a) return; const txt = 'أضف ' + a.name + ' إلى تطبيق Ora، فقد ربطته في الموصلات.'; if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('نُسخ الطلب. الصقه لي في محادثة Claude'), () => toast(txt)); else toast(txt); break; }
     case 'quick': { const t = $('#inp'); if (el.dataset.send === '1') sendMsg(el.dataset.q); else { t.value = el.dataset.q; grow(t); t.focus(); } break; }
     case 'send': { const t = $('#inp'); const v = t.value; t.value = ''; grow(t); sendMsg(v); break; }
     case 'stop': if (S.abort) S.abort.abort(); break;

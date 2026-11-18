@@ -1,6 +1,6 @@
 {
-  "name": "مساعدي",
-  "short_name": "مساعدي",
+  "name": "Ora",
+  "short_name": "Ora",
   "description": "مساعدك الشخصي دائمًا",
   "start_url": "./index.html",
   "scope": "./",
@@ -8,7 +8,7 @@
   "orientation": "portrait",
   "dir": "rtl",
   "lang": "ar",
-  "background_color": "#FBF5EE",
+  "background_color": "#000000",
   "theme_color": "#C2255C",
   "icons": [
     {

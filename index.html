@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مساعدي</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#C2255C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مساعدي">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FBF5EE;--card:#FFFDFA;--line:#F0E3D6;--line2:#F5ECE2;--ink:#2B1D22;--ink2:#4A3A3F;--mut:#7A6469;--acc:#B8285A;--accBg:#C2255C;--accSoft:#FCE6EE;--accInk:#9C1C47;--ok:#2F6B4F;--okSoft:#E7F3EC;--okDot:#3E9B6F;--bad:#B42318;--badSoft:#FDECEC;--warn:#A2531A;--warnSoft:#FBEBDD;--vio:#8A3FA8;--vioSoft:#F5E8F8;--chip:#F6ECE3;--off:#DCCBBE;--scrim:rgba(43,29,34,.45);--shadow:0 1px 2px rgba(120,60,75,.05),0 6px 20px rgba(120,60,75,.06)}
+[data-theme="dark"]{--bg:#1A1315;--card:#251B1E;--line:#3A2B30;--line2:#30242A;--ink:#F6ECEE;--ink2:#E2D3D7;--mut:#B8A3A9;--acc:#F59AB8;--accBg:#C2255C;--accSoft:#3D1F2A;--accInk:#FFC2D5;--ok:#7FD4A8;--okSoft:#1C3328;--okDot:#4FBF89;--bad:#FF9B91;--badSoft:#3A1A1A;--warn:#F5B37C;--warnSoft:#3A2614;--vio:#E1B2F5;--vioSoft:#33223D;--chip:#30242A;--off:#5A464C;--scrim:rgba(0,0,0,.6);--shadow:none}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{font-family:'Readex Pro',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:var(--acc)}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+#app{max-width:640px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg)}
+.top{display:flex;align-items:center;gap:12px;padding:16px 16px 10px}
+.top h1{margin:0;font-size:19px;font-weight:700;flex:1}
+.icon{width:44px;height:44px;border-radius:14px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink);padding:0;flex-shrink:0;position:relative}
+.icon svg{width:21px;height:21px}
+.badge{position:absolute;top:-5px;left:-5px;min-width:20px;height:20px;border-radius:10px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+[data-theme="dark"] .badge{color:#1a0b0b}
+.ttl{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px}
+.ttl b{font-size:17px}
+.st{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ok)}
+.st i{width:8px;height:8px;border-radius:4px;background:var(--okDot);display:block}
+.st.off{color:var(--mut)}.st.off i{background:var(--off)}
+.st.busy i{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.scroll{flex:1;overflow-y:auto;padding:6px 16px 16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
+.list{box-shadow:var(--shadow)}
+.greet{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;padding:40px 12px}
+.logo{width:72px;height:72px;border-radius:24px;background:var(--accSoft);color:var(--accBg);display:flex;align-items:center;justify-content:center}
+.logo svg{width:34px;height:34px}
+.greet h2{margin:0;font-size:24px;line-height:1.4;font-weight:700}
+.greet small{font-size:14px;color:var(--mut)}
+.newc{width:48px;height:48px;border-radius:24px;border:1px solid var(--line);background:var(--card);color:var(--accBg);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;box-shadow:var(--shadow)}
+.newc svg{width:22px;height:22px}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sec>h2,.lbl{margin:0;font-size:13px;font-weight:600;color:var(--mut);padding:0 4px}
+.row{display:flex;align-items:center;gap:12px}
+.muted{color:var(--mut);font-size:13px;line-height:1.7;margin:0}
+.btn{height:44px;border-radius:13px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:600;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.pri{background:var(--accBg);border-color:var(--accBg);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.ghost{border:none;background:transparent;color:var(--acc);padding:0 6px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.55;cursor:default}
+.btn svg{width:18px;height:18px}
+.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qk{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:right}
+.qk .ic{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.qk .ic svg{width:18px;height:18px}
+.qk b{font-size:15px}
+.qk span{font-size:12px;color:var(--mut)}
+.msg{display:flex;flex-direction:column;max-width:88%}
+.msg.u{align-self:flex-start}
+.msg.a{align-self:flex-end;max-width:100%;width:100%}
+.bub{border-radius:18px;padding:11px 14px;font-size:15px;line-height:1.75;overflow-wrap:anywhere}
+.msg.u .bub{background:var(--accBg);color:#fff;border-bottom-right-radius:6px;white-space:pre-wrap}
+.msg.a .bub{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg.err .bub{border-color:var(--bad);color:var(--bad)}
+.bub p{margin:0 0 6px}.bub p:last-child{margin:0}
+.bub ul{margin:4px 0 8px;padding-right:20px;padding-left:0}
+.bub li{margin:2px 0}
+.bub pre{direction:ltr;text-align:left;background:var(--chip);border-radius:10px;padding:10px;overflow-x:auto;font-size:13px;margin:6px 0}
+.bub code{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.bub a{color:var(--acc)}
+.dots{display:inline-flex;gap:4px;padding:6px 0}
+.dots i{width:7px;height:7px;border-radius:4px;background:var(--mut);animation:pulse 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+.msgacts{display:flex;gap:4px;padding:2px 4px}
+.msgacts button{border:none;background:transparent;color:var(--mut);font-size:12px;padding:8px 6px;min-height:36px}
+.composer{padding:8px 12px calc(12px + env(safe-area-inset-bottom));background:var(--bg);display:flex;align-items:flex-end;gap:8px}
+.cbox{flex:1;min-width:0;display:flex;align-items:flex-end;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:3px 4px 3px 3px;box-shadow:var(--shadow)}
+.cbox textarea{flex:1;min-width:0;border:none;outline:none;background:transparent;resize:none;font-size:15px;line-height:1.5;padding:9px 12px 9px 4px;max-height:130px}
+.cbtn{width:42px;height:42px;border-radius:21px;border:none;background:transparent;color:var(--mut);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.cbtn svg{width:20px;height:20px}
+.cbtn.send{background:var(--accBg);color:#fff}
+.cbtn.on{background:var(--badSoft);color:var(--bad)}
+.pend{display:flex;flex-direction:column;gap:12px}
+.pend .head{display:flex;align-items:center;gap:10px}
+.pend .ic{width:38px;height:38px;border-radius:12px;background:var(--badSoft);color:var(--bad);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pend .ic svg{width:18px;height:18px}
+.pend .body{font-size:13px;line-height:1.7;color:var(--ink2);background:var(--bg);border-radius:12px;padding:10px 12px;white-space:pre-wrap;max-height:220px;overflow:auto}
+.pend .acts{display:flex;gap:8px}.pend .acts .btn{flex:1}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--mut);font-weight:500}
+.inp{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px 12px;font-size:15px;outline:none}
+.inp:focus{border-color:var(--acc)}
+textarea.inp{resize:vertical;line-height:1.7}
+.list{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0 16px;display:flex;flex-direction:column}
+.list>.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line2);min-height:54px}
+.list>.li:last-child{border-bottom:none}
+.av{width:38px;height:38px;border-radius:19px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipx{display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 6px 4px 12px;font-size:14px}
+.chipx button{border:none;background:transparent;color:var(--mut);width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0}
+.seg{display:grid;gap:4px;background:var(--chip);border-radius:13px;padding:4px}
+.seg button{min-height:40px;border:none;border-radius:10px;background:transparent;font-size:13px;color:var(--ink2);padding:0 4px}
+.seg button[aria-checked="true"]{background:var(--accBg);color:#fff;font-weight:700}
+.tg{width:50px;height:30px;border-radius:15px;border:none;padding:3px;display:flex;align-items:center;background:var(--off);flex-shrink:0;justify-content:flex-start}
+.tg[aria-pressed="true"]{background:var(--accBg);justify-content:flex-end}
+.tg span{width:24px;height:24px;border-radius:12px;background:#fff;display:block}
+.svc{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+.note{display:flex;gap:12px;align-items:flex-start;background:var(--accSoft);color:var(--accInk);border-radius:18px;padding:14px;font-size:13px;line-height:1.7}
+.note svg{width:22px;height:22px;flex-shrink:0}
+.warnbox{background:var(--warnSoft);color:var(--warn);border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.6}
+.okt{color:var(--ok);font-size:12px;font-weight:600}
+.badt{color:var(--bad);font-size:12px;font-weight:600}
+.task .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);background:var(--bg);border-radius:12px;padding:9px 12px}
+.task .meta svg{width:16px;height:16px}
+.res{font-size:13px;line-height:1.7;color:var(--ink2);border-top:1px solid var(--line2);padding-top:10px}
+.res summary{cursor:pointer;color:var(--acc);font-weight:600;min-height:32px;display:flex;align-items:center}
+#scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+#drawer{position:absolute;top:0;bottom:0;right:0;width:312px;max-width:85%;background:var(--card);z-index:21;transform:translateX(105%);transition:transform .25s ease;display:flex;flex-direction:column;padding:20px 14px 20px;gap:18px;overflow-y:auto}
+#app.menu #scrim{opacity:1;pointer-events:auto}
+#app.menu #drawer{transform:none}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:14px;height:50px;padding:0 12px;border-radius:14px;border:none;background:transparent;font-size:15px;text-align:right;color:var(--ink)}
+.nav button svg{width:21px;height:21px;flex-shrink:0}
+.nav button[aria-current="page"]{background:var(--accSoft);color:var(--accInk);font-weight:600}
+.nav .cnt{margin-right:auto;font-size:12px;font-weight:700;background:var(--chip);color:var(--ink2);border-radius:10px;padding:2px 9px}
+.nav .cnt.red{background:var(--badSoft);color:var(--bad)}
+.me{display:flex;align-items:center;gap:12px;padding:12px;border-radius:18px;background:var(--bg);border:none;text-align:right;width:100%}
+.me .big{width:52px;height:52px;border-radius:26px;background:var(--accBg);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0}
+#toast{position:absolute;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:40;max-width:90%;text-align:center;line-height:1.6}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.big-av{width:88px;height:88px;border-radius:44px;background:var(--accBg);color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700}
+.center{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+
+/* ===== لمسة أجمل ===== */
+body{font-weight:400;letter-spacing:0}
+#app{background:var(--bg)}
+.top{padding:14px 16px 8px;position:relative;z-index:2}
+.top h1{font-size:20px;font-weight:600}
+.icon{border:none;border-radius:22px;background:var(--card);box-shadow:var(--shadow)}
+.ttl b{font-size:18px;font-weight:600;letter-spacing:.2px}
+.st{font-size:11.5px}
+.scroll{padding:8px 16px 20px;gap:16px}
+.card{border-color:transparent;border-radius:24px}
+.list{border-color:transparent;border-radius:24px}
+.btn{border-radius:16px;font-weight:500}
+.btn.pri{box-shadow:0 6px 16px rgba(194,37,92,.22)}
+[data-theme="dark"] .btn.pri{box-shadow:none}
+.inp{border-radius:14px;background:var(--bg);border-color:var(--line)}
+.inp:focus{border-color:var(--accBg);box-shadow:0 0 0 3px var(--accSoft)}
+/* المحادثة */
+.msg.u .bub{border-radius:22px 22px 6px 22px;padding:11px 16px;box-shadow:0 4px 14px rgba(194,37,92,.18)}
+[data-theme="dark"] .msg.u .bub{box-shadow:none}
+.msg.a .bub{border:none;background:transparent;padding:4px 4px 0;border-radius:0}
+.msg.a .bub::before{content:"";display:block;width:28px;height:28px;border-radius:10px;margin-bottom:8px;background:var(--accSoft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C2255C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z'/%3E%3Cpath d='M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z'/%3E%3C/svg%3E") center/16px no-repeat}
+.msg.err .bub{color:var(--bad)}
+.msgacts button{border-radius:10px}
+.msgacts button:hover{background:var(--chip)}
+/* البداية */
+.greet{gap:18px}
+.logo{width:84px;height:84px;border-radius:30px;background:var(--accSoft);box-shadow:0 10px 30px rgba(194,37,92,.15)}
+.logo svg{width:38px;height:38px}
+.greet h2{font-size:26px;font-weight:600}
+/* شريط الكتابة */
+.composer{padding:6px 14px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.cbox{border:1px solid var(--line);border-radius:28px;padding:5px;gap:4px;align-items:flex-end;box-shadow:0 8px 28px rgba(120,60,75,.10)}
+[data-theme="dark"] .cbox{box-shadow:none}
+.cbox:focus-within{border-color:var(--accBg)}
+.cbox textarea{padding:10px 6px;font-size:15.5px}
+.newc{width:42px;height:42px;border-radius:21px;border:none;background:var(--accSoft);color:var(--accBg);box-shadow:none;transition:transform .15s,background .15s}
+.newc:hover{background:var(--accBg);color:#fff}
+.newc:active{transform:scale(.92)}
+.newc svg{width:22px;height:22px}
+.cbtn.send{width:42px;height:42px;border-radius:21px;box-shadow:0 4px 12px rgba(194,37,92,.28)}
+[data-theme="dark"] .cbtn.send{box-shadow:none}
+.cbtn.send:active{transform:scale(.92)}
+/* القائمة الجانبية */
+#drawer{background:var(--bg);border-radius:28px 0 0 28px;padding:24px 14px;box-shadow:-10px 0 40px rgba(43,29,34,.15)}
+.me{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:14px}
+.me .big{border-radius:18px}
+.nav button{border-radius:16px;font-weight:400}
+.nav button:hover{background:var(--card)}
+.nav button[aria-current="page"]{background:var(--accBg);color:#fff;font-weight:500}
+.nav button[aria-current="page"] .cnt{background:rgba(255,255,255,.25);color:#fff}
+.big-av{border-radius:32px;box-shadow:0 10px 30px rgba(194,37,92,.2)}
+.seg{border-radius:16px;padding:5px;background:var(--chip)}
+.seg button{border-radius:12px}
+.svc{border-radius:14px}
+.note{border-radius:22px}
+
+/* ===== التصميم الجديد ===== */
+:root{--w1:#FBE3EB;--w2:#F4BFD0;--w3:#E68EAB}
+[data-theme="dark"]{--w1:#3A2028;--w2:#552838;--w3:#73334B}
+#screen{position:relative;overflow:hidden}
+#screen>*{position:relative;z-index:1}
+#screen>.waves{position:absolute;z-index:0;left:0;right:0;bottom:0;width:100%;height:210px;opacity:0;transition:opacity .3s;pointer-events:none}
+#screen.empty>.waves{opacity:1}
+.icon.flat{background:transparent;box-shadow:none;border-radius:14px;color:var(--accInk)}
+.icon.flat svg{width:25px;height:25px}
+.icon.flat:hover{background:var(--accSoft)}
+.top{padding:14px 12px 6px}
+.brand{font-size:24px !important;font-weight:700 !important;color:var(--accInk);letter-spacing:.3px}
+.st{font-size:11px}
+.greet{flex:1;justify-content:center;gap:10px;padding:10px 4px 150px}
+.halo{width:190px;height:190px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,var(--accSoft) 0 55%,transparent 56%),radial-gradient(circle,var(--w1) 0 70%,transparent 71%);margin-bottom:8px}
+.logo{width:118px;height:118px;border-radius:50%;background:var(--card);color:var(--accBg);box-shadow:0 12px 34px rgba(194,37,92,.18)}
+.logo svg{width:70px;height:70px}
+.greet h2{font-size:27px;font-weight:700;color:var(--accInk);margin:0}
+.greet p{margin:0 0 14px;font-size:17px;color:var(--ink2)}
+.sugg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.sugg button{display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 14px;border-radius:22px;border:1px solid var(--line);background:color-mix(in srgb,var(--card) 85%,var(--accSoft));text-align:right;box-shadow:var(--shadow)}
+.sugg button span{color:var(--accBg);flex-shrink:0;display:flex}
+.sugg button svg{width:24px;height:24px}
+.sugg button b{font-size:14px;font-weight:500;line-height:1.5;color:var(--ink)}
+.sugg button:active{transform:scale(.97)}
+/* شريط الكتابة */
+#screen>.composer{display:flex;align-items:center;gap:10px;margin:0 10px calc(10px + env(safe-area-inset-bottom));padding:10px;border-radius:30px;background:var(--card);box-shadow:0 -4px 30px rgba(120,60,75,.12);z-index:2}
+[data-theme="dark"] #screen>.composer{box-shadow:none;border:1px solid var(--line)}
+.round{width:52px;height:52px;border-radius:26px;border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:#fff;background:var(--accBg);transition:transform .15s}
+.round svg{width:23px;height:23px}
+.round:active{transform:scale(.92)}
+.round.mic{background:var(--accInk)}
+[data-theme="dark"] .round.mic{background:#7A1A3C}
+.round.mic.on{background:var(--bad);animation:pulse 1.2s infinite}
+.round.send{width:46px;height:46px}
+.pill{flex:1;min-width:0;display:flex;align-items:center;gap:2px;background:var(--bg);border-radius:24px;padding:2px 4px}
+.pill textarea{flex:1;min-width:0;border:none;outline:none;background:transparent;resize:none;font-size:15px;line-height:1.5;padding:10px 6px;max-height:120px}
+.pill .cbtn{color:var(--mut);width:40px;height:40px}
+.attrow{display:flex;align-items:center;gap:6px;margin:0 22px 6px}
+.fchip{display:inline-flex;align-items:center;gap:6px;background:var(--accSoft);color:var(--accInk);border-radius:12px;padding:4px 10px;font-size:13px;margin-bottom:6px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fchip svg{width:14px;height:14px;flex-shrink:0}
+.msg.u .fchip{background:rgba(255,255,255,.22);color:#fff;display:flex;width:fit-content}
+.attrow .fchip{margin:0}
+/* القائمة الجانبية */
+#drawer{background:var(--card);border-radius:34px 0 0 34px;padding:0 0 18px;gap:6px;width:300px}
+.dhead{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:34px 16px 18px;overflow:hidden}
+.dhead>*{position:relative}
+.dhead .topwave{position:absolute;top:0;left:0;width:100%;height:150px}
+.dlogo{width:96px;height:96px;border-radius:50%;background:var(--accBg);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px var(--card),0 10px 30px rgba(194,37,92,.25);margin-bottom:8px}
+.dlogo svg{width:56px;height:56px}
+.dhead b{font-size:24px;color:var(--accInk)}
+.dhead .sub{font-size:14px;color:var(--ink2)}
+.nav{padding:0 12px;gap:2px}
+.nav hr{border:none;border-top:1px solid var(--line);margin:6px 12px}
+.nav button{height:52px;border-radius:18px;font-size:16px;font-weight:500;gap:14px;padding:0 14px}
+.nav .ni{color:var(--accBg);display:flex}
+.nav .ni svg{width:24px;height:24px}
+.nav button[aria-current="page"]{background:var(--accSoft);color:var(--accInk);font-weight:600}
+.nav button[aria-current="page"] .cnt{background:var(--card);color:var(--accInk)}
+.dfoot{display:flex;align-items:center;gap:10px;margin:0 14px;padding:14px 16px;border-radius:20px;background:var(--accSoft);color:var(--accInk);font-size:14px}
+.faq summary{cursor:pointer;font-weight:600;font-size:15px;min-height:28px;display:flex;align-items:center}
+</style>
+</head>
+<body>
+<div id="app" data-screen="chat">
+  <div id="scrim" data-act="closemenu"></div>
+  <nav id="drawer" aria-label="القائمة الرئيسية"></nav>
+  <section id="screen" style="flex:1;display:flex;flex-direction:column;min-height:0"></section>
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+<script>
+(function(){
+"use strict";
+/* ---------- أيقونات ---------- */
+const P = (d, extra='') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${d}</svg>`;
+const I = {
+  menu: P('<path d="M4 7h16M4 12h16M4 17h10"/>'),
+  edit: P('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+  back: P('<path d="m9 6 6 6-6 6"/>'),
+  chev: P('<path d="m15 6-6 6 6 6"/>'),
+  search: P('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+  trans: P('<path d="M4 5h8M8 3v2M10 5c0 4-3 7-6 8M6 9c1 2 3 3.5 5 4"/><path d="m13 21 4-9 4 9M14.5 18h5"/>'),
+  chart: P('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+  code: P('<path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>'),
+  mail: P('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
+  send: P('<path d="M12 19V5M5 12l7-7 7 7"/>','stroke-width="2.2"'),
+  stop: P('<rect x="7" y="7" width="10" height="10" rx="2"/>'),
+  mic: P('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>'),
+  chat: P('<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>'),
+  user: P('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
+  repeat: P('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/><path d="M12 8v4l3 2"/>'),
+  shield: P('<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/>'),
+  gear: P('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'),
+  clock: P('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  plus: P('<path d="M12 5v14M5 12h14"/>'),
+  x: P('<path d="M6 6l12 12M18 6 6 18"/>'),
+  play: P('<path d="M7 5v14l12-7Z"/>'),
+  trash: P('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+  copy: P('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>'),
+  home: P('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),
+  plane: P('<path d="M21 3 10 14"/><path d="m21 3-7 18-4-7-7-4Z"/>'),
+  clip: P('<path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/>'),
+  info: P('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+  help: P('<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>'),
+  plusc: P('<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>'),
+  logo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><ellipse cx="12" cy="7.6" rx="3.1" ry="4.8"/><ellipse cx="12" cy="16.4" rx="3.1" ry="4.8"/><ellipse cx="7.6" cy="12" rx="4.8" ry="3.1"/><ellipse cx="16.4" cy="12" rx="4.8" ry="3.1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>'
+};
+const WAVES = '<svg class="waves" viewBox="0 0 400 170" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70C80 28 165 112 262 70S360 38 400 58V170H0Z" fill="var(--w1)"/><path d="M0 102C92 60 190 142 292 96S372 80 400 90V170H0Z" fill="var(--w2)"/><path d="M0 130C102 104 205 165 305 124S382 118 400 124V170H0Z" fill="var(--w3)"/></svg>';
+const TOPWAVE = '<svg class="topwave" viewBox="0 0 320 170" preserveAspectRatio="none" aria-hidden="true"><path d="M60 0H320V95C270 70 230 120 175 92S95 40 60 0Z" fill="var(--w1)"/><path d="M150 0H320V55C285 40 255 75 215 52S170 20 150 0Z" fill="var(--w2)"/><path d="M240 0H320V22C300 18 282 32 262 20S248 6 240 0Z" fill="var(--w3)"/></svg>';
+
+/* ---------- أدوات صغيرة ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid6 = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, r) => setTimeout(() => r({code:'timeout'}), ms))]);
+const use = n => (window.claude && typeof window.claude.use === 'function') ? Promise.resolve(window.claude.use(n)).catch(() => null) : Promise.resolve(null);
+const DAYS = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const hourLabel = h => { const hh = ((h + 11) % 12) + 1; return hh + ':00 ' + (h < 12 ? 'صباحًا' : 'مساءً'); };
+function inl(s){
+  return s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+          .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+function md(t){
+  return String(t || '').split('```').map((part, i) => {
+    if (i % 2) return '<pre><code>' + esc(part.replace(/^[a-zA-Z0-9_-]*\n/, '')) + '</code></pre>';
+    let out = '', inList = false;
+    for (const raw of esc(part).split('\n')) {
+      const h = raw.match(/^\s*#{1,4}\s+(.*)/);
+      const m = raw.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)/);
+      if (m) { if (!inList) { out += '<ul>'; inList = true; } out += '<li>' + inl(m[1]) + '</li>'; continue; }
+      if (inList) { out += '</ul>'; inList = false; }
+      if (h) out += '<p><b>' + inl(h[1]) + '</b></p>';
+      else if (raw.trim()) out += '<p>' + inl(raw) + '</p>';
+    }
+    if (inList) out += '</ul>';
+    return out;
+  }).join('');
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3800); }
+
+/* ---------- الحالة ---------- */
+function defaults(){
+  const now = Date.now();
+  return {
+    profile: { name:'', country:'', tz:'', about:'', projects:[], contacts:[] },
+    settings: { theme:'light', length:'short', tier:'default', apiKey:'', gClientId:'', gConnected:false },
+    perms: { gmail:2, drive:1, web:1 },
+    apps: [],
+    tasks: [
+      { id:'t1', title:'أخبار اليوم', prompt:'ابحث في الإنترنت وأعطني أهم أخبار اليوم باختصار: أخبار بلدي أولًا ثم أهم أخبار العالم والتقنية.', freq:'daily', hour:8, weekday:6, on:true, lastRun:now, lastResult:'' },
+      { id:'t2', title:'ملخص البريد المهم', prompt:'ابحث في بريدي الوارد عن رسائل آخر يوم غير المقروءة أو المهمة، ولخّص لي أهمها وما يحتاج ردًا مني.', freq:'daily', hour:21, weekday:6, on:false, lastRun:now, lastResult:'' },
+      { id:'t3', title:'خطة الأسبوع', prompt:'ساعدني بخطة قصيرة لهذا الأسبوع بناءً على مشاريعي، مع ثلاث أولويات واضحة.', freq:'weekly', hour:10, weekday:6, on:false, lastRun:now, lastResult:'' }
+    ]
+  };
+}
+const S = {
+  db:null, uid:null, mcp:null, sample:null, user:null, dict:null, meName:'',
+  state: defaults(), chat: [], pending: [], archive: [],
+  screen:'chat', busy:false, abort:null, ready:false, persisted:'loading',
+  running:new Set(), ui:{ editing:{}, busy:{}, err:{}, taskForm:null, confirm:null, test:{} }
+};
+
+/* ---------- الحفظ ---------- */
+const store = {
+  q:{}, t:{},
+  path(n){ return 'data/users/' + S.uid + '/' + n; },
+  async load(n, def){
+    if (S.db && S.uid) {
+      try { const snap = await withTimeout(S.db.doc(this.path(n)).get(), 10000); return snap.exists ? JSON.parse(JSON.stringify(snap.data())) : def; }
+      catch(e){ S.persisted = 'error'; return def; }
+    }
+    try { const v = localStorage.getItem('mosa3di_' + n); if (v) return JSON.parse(v); } catch(e){}
+    return def;
+  },
+  save(n, getBody){
+    clearTimeout(this.t[n]);
+    this.t[n] = setTimeout(() => {
+      const body = JSON.parse(JSON.stringify(getBody()));
+      this.q[n] = (this.q[n] || Promise.resolve()).then(async () => {
+        if (S.db && S.uid) {
+          try { await S.db.doc(this.path(n)).set(body); }
+          catch(e){ toast(e && e.code === 'quota_exceeded' ? 'مساحة الحفظ ممتلئة. امسح سجل المحادثات من الإعدادات.' : 'تعذر حفظ التغييرات الآن.'); }
+        } else { try { localStorage.setItem('mosa3di_' + n, JSON.stringify(body)); } catch(e){} }
+      });
+    }, 400);
+  },
+  del(n){
+    this.q[n] = (this.q[n] || Promise.resolve()).then(async () => {
+      if (S.db && S.uid) { try { await S.db.doc(this.path(n)).delete(); } catch(e){} }
+      else { try { localStorage.removeItem('mosa3di_' + n); } catch(e){} }
+    });
+  }
+};
+const saveArchive = () => store.save('archive', () => ({ items: S.archive }));
+
+/* ---------- المحادثات السابقة ---------- */
+function chatTitle(msgs){
+  const u = msgs.find(m => m.role === 'user');
+  const t = (u ? u.text : msgs[0].text).replace(/\s+/g, ' ').replace(/\*\*/g, '').trim();
+  return t.length > 42 ? t.slice(0, 42) + '…' : t;
+}
+function archiveCurrent(){
+  const msgs = S.chat.filter(m => !m.pending && m.text);
+  if (!msgs.length) return;
+  const id = 'c' + uid6();
+  const body = msgs.slice(-40).map(m => ({ role:m.role, text:String(m.text).slice(0, 3000), ts:m.ts, error:m.error || undefined }));
+  store.save('c_' + id, () => ({ messages: body }));
+  S.archive.unshift({ id, title:chatTitle(msgs), ts:Date.now(), count:body.length });
+  while (S.archive.length > 25) { const old = S.archive.pop(); store.del('c_' + old.id); }
+  saveArchive();
+}
+function newChat(){
+  if (S.busy) { toast('انتظر حتى ينتهي الرد الحالي'); return; }
+  if (!S.chat.length) { go('chat'); $('#inp') && $('#inp').focus(); return; }
+  archiveCurrent();
+  S.chat = []; saveChat();
+  go('chat'); toast('بدأت محادثة جديدة، والسابقة محفوظة في القائمة');
+}
+async function openChat(id){
+  if (S.busy) { toast('انتظر حتى ينتهي الرد الحالي'); return; }
+  const it = S.archive.find(x => x.id === id); if (!it) return;
+  const doc = await store.load('c_' + id, null);
+  if (!doc || !Array.isArray(doc.messages)) { toast('تعذر فتح هذه المحادثة'); return; }
+  archiveCurrent();
+  S.archive = S.archive.filter(x => x.id !== id); saveArchive(); store.del('c_' + id);
+  S.chat = doc.messages; saveChat();
+  go('chat');
+}
+function delChat(id){
+  S.archive = S.archive.filter(x => x.id !== id); saveArchive(); store.del('c_' + id); renderDrawer();
+}
+const saveState = () => store.save('state', () => S.state);
+const saveChat = () => store.save('chat', () => ({ messages: S.chat.filter(m => !m.pending).slice(-60) }));
+const savePending = () => store.save('pending', () => ({ items: S.pending.slice(0, 30) }));
+
+/* ---------- عقل المساعد: Claude عبر مفتاحك ---------- */
+const MODELS = { quick:'claude-haiku-5-5', default:'claude-sonnet-5-5', complex:'claude-opus-5-5' };
+const apiKey = () => (S.state.settings.apiKey || '').trim();
+const slim = (x, n=7000) => { let s = typeof x === 'string' ? x : JSON.stringify(x); return s.length > n ? s.slice(0, n) + ' …(مقتطع)' : s; };
+const asList = v => (Array.isArray(v) ? v : String(v || '').split(/[,،;\s]+/)).map(s => String(s).trim()).filter(Boolean);
+const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+function apiErr(status, msg){
+  if (status === 401) return 'مفتاح Claude غير صحيح. راجعه في الإعدادات.';
+  if (status === 403) return 'المفتاح لا يملك صلاحية. تأكد منه في console.anthropic.com.';
+  if (status === 429) return 'طلبات كثيرة أو انتهى رصيدك. انتظر قليلًا أو اشحن رصيدك.';
+  if (status === 400 && /credit|balance/i.test(msg || '')) return 'رصيدك في حساب أنثروبيك انتهى. اشحنه من console.anthropic.com.';
+  if (status >= 500) return 'خوادم Claude مشغولة الآن. حاول بعد قليل.';
+  return 'خطأ ' + status + ': ' + String(msg || '').slice(0, 200);
+}
+async function askClaude(system, messages, opts){
+  opts = opts || {};
+  const tools = opts.tools || [];
+  const msgs = messages.slice();
+  let full = '';
+  for (let step = 0; step < 10; step++) {
+    const body = { model: MODELS[S.state.settings.tier] || MODELS.default, max_tokens: 4096, system, messages: msgs, stream: true };
+    const t = tools.map(x => ({ name:x.name, description:x.description, input_schema:x.inputSchema }));
+    if (S.state.perms.web) t.push({ type:'web_search_20250305', name:'web_search', max_uses:5 });
+    if (t.length) body.tools = t;
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:opts.signal, headers:{ 'content-type':'application/json', 'x-api-key':apiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify(body) });
+    } catch(e) { if (e && e.name === 'AbortError') throw e; throw new Error('لا يوجد اتصال بالإنترنت أو تعذر الوصول إلى Claude.'); }
+    if (!res.ok) { let j = {}; try { j = await res.json(); } catch(e){} throw new Error(apiErr(res.status, j.error && j.error.message)); }
+    const blocks = []; let stop = null, buf = '';
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    if (full && !/\n$/.test(full)) full += '\n\n';
+    const base = full;
+    let stepText = '';
+    for (;;) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream:true });
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+        const line = chunk.split('\n').find(l => l.startsWith('data:')); if (!line) continue;
+        let ev; try { ev = JSON.parse(line.slice(5)); } catch(e) { continue; }
+        if (ev.type === 'content_block_start') { const b = JSON.parse(JSON.stringify(ev.content_block)); if (b.type === 'tool_use' || b.type === 'server_tool_use') { b._j = ''; } if (b.type === 'text') b.text = b.text || ''; blocks[ev.index] = b; }
+        else if (ev.type === 'content_block_delta') {
+          const b = blocks[ev.index], d = ev.delta; if (!b) continue;
+          if (d.type === 'text_delta') { b.text += d.text; stepText += d.text; full = base + stepText; opts.onText && opts.onText({ text:full }); }
+          else if (d.type === 'input_json_delta') b._j += d.partial_json;
+          else if (d.type === 'citations_delta') { (b.citations = b.citations || []).push(d.citation); }
+        }
+        else if (ev.type === 'content_block_stop') { const b = blocks[ev.index]; if (b && b._j !== undefined) { try { b.input = b._j ? JSON.parse(b._j) : {}; } catch(e) { b.input = {}; } delete b._j; } }
+        else if (ev.type === 'message_delta') { stop = ev.delta && ev.delta.stop_reason; }
+        else if (ev.type === 'error') throw new Error('خطأ من Claude: ' + ((ev.error && ev.error.message) || ''));
+      }
+    }
+    if (!stepText) full = base.replace(/\n\n$/, '');
+    const content = blocks.filter(Boolean);
+    msgs.push({ role:'assistant', content });
+    if (stop === 'pause_turn') continue;
+    if (stop !== 'tool_use') return full;
+    const results = [];
+    for (const b of content.filter(b => b.type === 'tool_use')) {
+      const tool = tools.find(x => x.name === b.name);
+      try { const out = tool ? await tool.execute(b.input || {}) : 'أداة غير معروفة'; results.push({ type:'tool_result', tool_use_id:b.id, content:String(out) }); }
+      catch(e) { results.push({ type:'tool_result', tool_use_id:b.id, content:String((e && e.message) || e), is_error:true }); }
+    }
+    if (!results.length) return full;
+    msgs.push({ role:'user', content:results });
+  }
+  return full;
+}
+
+/* ---------- حساب جوجل: جيميل ودرايف ---------- */
+const G = { token:null, exp:0 };
+try { const t = JSON.parse(localStorage.getItem('mosa3di_gtok') || 'null'); if (t && t.exp > Date.now()) { G.token = t.token; G.exp = t.exp; } } catch(e) {}
+const gConfigured = () => !!(S.state.settings.gClientId || '').trim();
+function loadGis(){
+  return new Promise((res, rej) => {
+    if (window.google && google.accounts && google.accounts.oauth2) return res();
+    const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+    s.onload = () => res(); s.onerror = () => rej(new Error('تعذر تحميل خدمة جوجل. تأكد من الإنترنت.'));
+    document.head.appendChild(s);
+  });
+}
+async function gConnect(interactive){
+  if (!gConfigured()) throw new Error('أضف معرّف جوجل في الإعدادات أولًا.');
+  await loadGis();
+  return new Promise((res, rej) => {
+    const c = google.accounts.oauth2.initTokenClient({
+      client_id: S.state.settings.gClientId.trim(),
+      scope: 'https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/drive.readonly',
+      prompt: interactive ? 'consent' : '',
+      callback: r => {
+        if (r.error) return rej(new Error('لم توافق جوجل على الدخول: ' + r.error));
+        G.token = r.access_token; G.exp = Date.now() + (r.expires_in || 3600) * 1000;
+        try { localStorage.setItem('mosa3di_gtok', JSON.stringify({ token:G.token, exp:G.exp })); } catch(e) {}
+        S.state.settings.gConnected = true; saveState(); res(G.token);
+      },
+      error_callback: () => rej(new Error('لم يكتمل تسجيل الدخول بجوجل. اضغط «ربط حساب جوجل» في الصلاحيات.'))
+    });
+    c.requestAccessToken();
+  });
+}
+async function gToken(){ if (G.token && Date.now() < G.exp - 60000) return G.token; return gConnect(false); }
+async function gfetch(url, opt){
+  const tok = await gToken();
+  const r = await fetch(url, Object.assign({}, opt, { headers:Object.assign({ Authorization:'Bearer ' + tok }, (opt && opt.headers) || {}) }));
+  if (r.status === 401) { G.token = null; throw new Error('انتهت جلسة جوجل. اضغط «ربط حساب جوجل» في الصلاحيات.'); }
+  if (r.status === 403) throw new Error('جوجل رفض الطلب. تأكد من تفعيل واجهتي Gmail وDrive في مشروعك.');
+  if (!r.ok) throw new Error('خطأ من جوجل: ' + r.status);
+  return r.json();
+}
+const GM = 'https://gmail.googleapis.com/gmail/v1/users/me/';
+const hdr = (m, n) => { const h = (m.payload && m.payload.headers || []).find(x => x.name.toLowerCase() === n.toLowerCase()); return h ? h.value : ''; };
+function b64dec(s){ try { const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/')); return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))); } catch(e) { return ''; } }
+function b64enc(str){ const bytes = new TextEncoder().encode(str); let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b)); return btoa(bin); }
+function bodyText(p){
+  if (!p) return '';
+  if (p.mimeType === 'text/plain' && p.body && p.body.data) return b64dec(p.body.data);
+  if (p.parts) { for (const x of p.parts) { const t = bodyText(x); if (t) return t; } }
+  if (p.mimeType === 'text/html' && p.body && p.body.data) return b64dec(p.body.data).replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  return '';
+}
+async function gmailSearch(q, n){
+  const l = await gfetch(GM + 'threads?maxResults=' + n + '&q=' + encodeURIComponent(q));
+  const out = [];
+  for (const t of (l.threads || []).slice(0, n)) {
+    const th = await gfetch(GM + 'threads/' + t.id + '?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date');
+    const m = th.messages[th.messages.length - 1];
+    out.push({ threadId:t.id, subject:hdr(m, 'Subject'), from:hdr(m, 'From'), date:hdr(m, 'Date'), snippet:m.snippet, unread:(m.labelIds || []).includes('UNREAD'), messages:th.messages.length });
+  }
+  return out;
+}
+async function gmailRead(id){
+  const th = await gfetch(GM + 'threads/' + id + '?format=full');
+  return th.messages.map(m => ({ from:hdr(m, 'From'), to:hdr(m, 'To'), date:hdr(m, 'Date'), subject:hdr(m, 'Subject'), body:bodyText(m.payload).slice(0, 4000) }));
+}
+function rawMail(i){
+  const mime = 'To: ' + i.to.join(', ') + '\r\nSubject: =?UTF-8?B?' + b64enc(i.subject) + '?=\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: base64\r\n\r\n' + b64enc(i.body).replace(/.{76}/g, '$&\r\n');
+  return b64enc(mime).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+const gmailSend = i => gfetch(GM + 'messages/send', { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ raw:rawMail(i) }) });
+const gmailDraft = i => gfetch(GM + 'drafts', { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ message:{ raw:rawMail(i) } }) });
+async function driveSearch(k){
+  const q = "fullText contains '" + k.replace(/\\/g, '').replace(/'/g, "\\'") + "' and trashed = false";
+  const r = await gfetch('https://www.googleapis.com/drive/v3/files?pageSize=8&fields=files(id,name,mimeType,modifiedTime,webViewLink)&q=' + encodeURIComponent(q));
+  return r.files || [];
+}
+
+function addPending(kind, input, summary){
+  const it = { id:'p' + uid6(), kind, input, summary, createdAt:Date.now(), status:'waiting' };
+  S.pending.unshift(it); S.pending = S.pending.slice(0, 30); savePending(); renderPending(); renderDrawer();
+  return it;
+}
+function buildTools(){
+  const p = S.state.perms, T = [];
+  const mailOk = gConfigured() && S.state.settings.gConnected;
+  if (mailOk && p.gmail >= 1) {
+    T.push({ name:'gmail_search', description:'يبحث في بريد جيميل للمستخدم. query بصيغة بحث جيميل، مثل: is:unread newer_than:1d أو from:ali@example.com.',
+      inputSchema:{ type:'object', properties:{ query:{type:'string'}, max:{type:'integer'} }, required:['query'] },
+      execute: async i => slim(await gmailSearch(String(i.query || ''), Math.max(1, Math.min(i.max || 8, 15)))) });
+    T.push({ name:'gmail_read', description:'يقرأ محادثة بريد كاملة بمعرّفها threadId.',
+      inputSchema:{ type:'object', properties:{ threadId:{type:'string'} }, required:['threadId'] },
+      execute: async i => slim(await gmailRead(String(i.threadId)), 9000) });
+  }
+  if (mailOk && p.gmail >= 2) {
+    const schema = { type:'object', properties:{ to:{type:'array', items:{type:'string'}}, subject:{type:'string'}, body:{type:'string', description:'نص عادي بلا ماركداون'} }, required:['to','subject','body'] };
+    T.push({ name:'gmail_draft', description:'ينشئ مسودة بريد في جيميل دون إرسالها.', inputSchema:schema,
+      execute: async i => { const to = asList(i.to); if (!to.length || !to.every(isEmail)) return 'خطأ: عنوان البريد غير صحيح. اسأل المستخدم.'; await gmailDraft({ to, subject:String(i.subject || ''), body:String(i.body || '') }); return 'أُنشئت المسودة في جيميل.'; } });
+    T.push({ name:'gmail_send', description: p.gmail >= 3 ? 'يرسل بريدًا فورًا. استخدمه فقط إذا طلب المستخدم الإرسال.' : 'يضع البريد في قائمة "بانتظار موافقتك" ولا يُرسل حتى يوافق المستخدم. استخدمه فقط إذا طلب الإرسال.', inputSchema:schema,
+      execute: async i => {
+        const to = asList(i.to); if (!to.length || !to.every(isEmail)) return 'خطأ: عنوان البريد غير صحيح. اسأل المستخدم.';
+        const input = { to, subject:String(i.subject || ''), body:String(i.body || '') };
+        if (S.state.perms.gmail >= 3) { await gmailSend(input); return 'تم الإرسال فعلًا إلى ' + to.join(', '); }
+        addPending('gmail_send', input, 'إرسال بريد إلى ' + to.join('، '));
+        return 'لم يُرسل بعد. الرسالة في "بانتظار موافقتك" أعلى المحادثة. أخبر المستخدم بذلك باختصار.';
+      } });
+  }
+  if (mailOk && p.drive >= 1) {
+    T.push({ name:'drive_search', description:'يبحث في ملفات جوجل درايف للمستخدم بكلمات.', inputSchema:{ type:'object', properties:{ keywords:{type:'string'} }, required:['keywords'] },
+      execute: async i => slim(await driveSearch(String(i.keywords || ''))) });
+  }
+  return T;
+}
+const LV = ['لا شيء','قراءة فقط','بموافقتك','تلقائي'];
+function systemPrompt(){
+  const pr = S.state.profile, st = S.state.settings, p = S.state.perms;
+  const name = pr.name || 'المستخدم';
+  const now = new Date().toLocaleString('ar', { dateStyle:'full', timeStyle:'short' });
+  const contacts = (pr.contacts || []).map(c => '- ' + c.name + (c.relation ? ' (' + c.relation + ')' : '') + (c.email ? ': ' + c.email : '')).join('\n') || 'لا يوجد';
+  const google = gConfigured() && st.gConnected;
+  return [
+    'أنت "مساعدي"، المساعد الشخصي لـ ' + name + '.',
+    'تكلّم بالعربية دائمًا، ولا تخلط كلمات إنجليزية إلا الأسماء والرموز الضرورية.',
+    'الوقت الآن على جهاز المستخدم: ' + now + (pr.tz ? ' (' + pr.tz + ')' : '') + '.',
+    'معلومات المستخدم:', '- البلد: ' + (pr.country || 'غير محدد'), '- مشاريعه: ' + ((pr.projects || []).join('، ') || 'غير محددة'), '- نبذة: ' + (pr.about || 'لا يوجد'),
+    'جهات الاتصال المهمة:', contacts,
+    'صلاحياتك: جيميل: ' + (google ? LV[p.gmail] : 'غير مربوط') + '، جوجل درايف: ' + (google ? LV[p.drive] : 'غير مربوط') + '، البحث في الإنترنت: ' + (p.web ? 'مفعّل' : 'متوقف') + '.',
+    'استخدم الأدوات لجلب البيانات الحقيقية ولا تخترع أرقامًا أو رسائل. إذا طلب شيئًا لا تملك أداته، أخبره أي صلاحية يفعّلها من شاشة "الصلاحيات".',
+    p.web ? 'استخدم البحث في الإنترنت للأخبار والأسعار وأي معلومة قد تكون تغيّرت، واذكر المصادر باختصار.' : 'البحث في الإنترنت متوقف؛ أجب من معرفتك ونبّه إن كانت المعلومة قد تغيّرت.',
+    'لا ترسل بريدًا إلا إذا طلب المستخدم الإرسال صراحة. إذا ذكر شخصًا بالاسم فابحث عن بريده في جهات الاتصال، وإن لم تجده فاسأله.',
+    st.length === 'long' ? 'أسلوب الردود: مفصّل ومنظم.' : 'أسلوب الردود: قصير ومباشر.'
+  ].join('\n');
+}
+async function runAgent(messages, opts){
+  return askClaude(systemPrompt(), messages, Object.assign({ tools:buildTools() }, opts || {}));
+}
+const sampleErr = e => String((e && e.message) || e || 'خطأ غير معروف');
+function historyMsgs(){
+  const out = [];
+  for (const m of S.chat.filter(m => !m.pending && !m.error && m.text).slice(-16)) {
+    const role = m.role === 'user' ? 'user' : 'assistant';
+    if (!out.length && role !== 'user') continue;
+    const c = m.ctx ? m.text + '\n\n[ملف مرفق: ' + m.file + ']\n' + m.ctx : m.text;
+    if (out.length && out[out.length - 1].role === role) out[out.length - 1].content += '\n\n' + c;
+    else out.push({ role, content:c });
+  }
+  return out;
+}
+const blobB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(b); });
+
+/* ---------- المحادثة ---------- */
+async function sendMsg(text){
+  text = String(text || '').trim();
+  const att = S.attach;
+  if ((!text && !att) || S.busy) return;
+  if (!apiKey()) { toast('أضف مفتاح Claude من الإعدادات أولًا'); go('settings'); return; }
+  S.attach = null; renderAttach();
+  const um = { role:'user', text: text || (att && att.kind === 'image' ? 'ما رأيك في هذه الصورة؟' : 'حلّل هذا الملف'), ts:Date.now() };
+  if (att) { um.file = att.name; if (att.kind === 'text') um.ctx = att.text.slice(0, 12000); else um.ctx = '(أرفق المستخدم صورة باسم ' + att.name + ')'; }
+  S.chat.push(um);
+  const a = { role:'assistant', text:'', ts:Date.now(), pending:true };
+  S.chat.push(a);
+  S.busy = true; S.abort = new AbortController();
+  renderMessages(); renderComposer(); renderStatus(); scrollEnd();
+  try {
+    const msgs = historyMsgs();
+    if (att && att.kind === 'image' && msgs.length) { const last = msgs[msgs.length - 1]; last.content = [{ type:'image', source:{ type:'base64', media_type:att.blob.type || 'image/jpeg', data:await blobB64(att.blob) } }, { type:'text', text:last.content }]; }
+    const t = await runAgent(msgs, { signal:S.abort.signal, onText: ({text}) => { a.text = text; updateLast(); } });
+    a.text = t || a.text || 'لم يصلني رد.';
+  } catch(e) {
+    if (e && (e.name === 'AbortError' || e.code === 'cancelled' || e.code === 'aborted')) a.text = a.text || 'تم الإيقاف.';
+    else { a.text = (e && e.text ? e.text + '\n\n' : '') + sampleErr(e); a.error = true; }
+  } finally {
+    delete a.pending; S.busy = false; S.abort = null;
+    S.chat = S.chat.slice(-60); saveChat();
+    renderMessages(); renderComposer(); renderStatus(); scrollEnd();
+  }
+}
+
+async function approve(id){
+  const it = S.pending.find(x => x.id === id); if (!it || S.ui.busy[id]) return;
+  S.ui.busy[id] = true; S.ui.err[id] = ''; renderPending();
+  try {
+    await gmailSend(it.input);
+    it.status = 'sent'; it.doneAt = Date.now();
+    S.chat.push({ role:'assistant', text:'تم إرسال البريد إلى ' + it.input.to.join('، ') + ' بعنوان «' + it.input.subject + '».', ts:Date.now() });
+    saveChat(); renderMessages(); toast('تم الإرسال');
+  } catch(e) { S.ui.err[id] = e.message; }
+  S.ui.busy[id] = false; savePending(); renderPending(); renderDrawer();
+}
+function reject(id){
+  const it = S.pending.find(x => x.id === id); if (!it) return;
+  it.status = 'rejected'; it.doneAt = Date.now(); savePending(); renderPending(); renderDrawer(); toast('أُلغيت الرسالة ولن تُرسل');
+}
+
+/* ---------- المهام ---------- */
+function lastSlot(t){
+  const now = new Date(), d = new Date(now); d.setHours(t.hour, 0, 0, 0);
+  if (t.freq === 'daily') { if (d > now) d.setDate(d.getDate() - 1); }
+  else { d.setDate(d.getDate() - ((d.getDay() - t.weekday + 7) % 7)); if (d > now) d.setDate(d.getDate() - 7); }
+  return d.getTime();
+}
+const isDue = t => t.on && (t.lastRun || 0) < lastSlot(t);
+const whenText = t => (t.freq === 'daily' ? 'يوميًا' : 'كل ' + DAYS[t.weekday]) + ' · ' + hourLabel(t.hour);
+async function runTask(id){
+  const t = S.state.tasks.find(x => x.id === id); if (!t || S.running.has(id)) return;
+  if (!apiKey()) { toast('أضف مفتاح Claude من الإعدادات أولًا'); return; }
+  S.running.add(id); renderTasksIfOpen(); renderDue();
+  try {
+    const msgs = [{ role:'user', content: systemPrompt() + '\n\nهذه مهمة متكررة بعنوان «' + t.title + '». نفّذها الآن بالأدوات المتاحة، ثم اكتب النتيجة مختصرة ومنظمة:\n' + t.prompt }];
+    const txt = await runAgent(msgs);
+    t.lastResult = String(txt || '').slice(0, 4000); t.lastError = ''; t.lastRun = Date.now();
+    S.chat.push({ role:'assistant', text:'**' + t.title + '**\n' + (txt || 'لا توجد نتيجة.'), ts:Date.now() }); saveChat();
+  } catch(e) { t.lastError = sampleErr(e); }
+  S.running.delete(id); saveState(); renderTasksIfOpen(); renderDue(); if (S.screen === 'chat') { renderMessages(); scrollEnd(); }
+}
+async function runDue(){ for (const t of S.state.tasks.filter(isDue)) await runTask(t.id); }
+
+/* ---------- العرض ---------- */
+function applyTheme(){
+  const th = S.state.settings.theme;
+  const dark = th === 'dark' || (th === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+}
+const waiting = () => S.pending.filter(p => p.status === 'waiting');
+const displayName = () => S.state.profile.name || S.meName || '';
+function go(screen){ S.screen = screen; $('#app').classList.remove('menu'); $('#app').dataset.screen = screen; renderScreen(); renderDrawer(); }
+
+function renderDrawer(){
+  const w = waiting().length, on = S.state.tasks.filter(t => t.on).length;
+  const cur = s => S.screen === s ? ' aria-current="page"' : '';
+  const it = (act, to, icon, label, extra='') => `<button data-act="${act}"${to ? ` data-to="${to}"` : ''}${to ? cur(to) : ''}><span class="ni">${I[icon]}</span><span class="nl">${label}</span>${extra}</button>`;
+  $('#drawer').innerHTML = `
+    <div class="dhead">${TOPWAVE}
+      <span class="dlogo">${I.logo}</span>
+      <b>مساعدي</b><span class="sub">مساعدك الشخصي دائمًا</span>
+    </div>
+    <div class="nav">
+      ${it('go', 'chat', 'home', 'الدردشة', w ? `<span class="cnt red">${w}</span>` : '')}
+      ${it('newchat', '', 'plusc', 'محادثة جديدة')}
+      ${it('micnav', '', 'mic', 'تسجيل الصوت')}
+      <hr>
+      ${it('go', 'tasks', 'repeat', 'المهام المتكررة', `<span class="cnt">${on}</span>`)}
+      ${it('go', 'perms', 'shield', 'الصلاحيات')}
+      ${it('go', 'settings', 'gear', 'الإعدادات')}
+      ${it('go', 'profile', 'user', 'ملفي الشخصي')}
+      <hr>
+      ${it('go', 'about', 'info', 'حول التطبيق')}
+      ${it('go', 'help', 'help', 'مساعدة ودعم')}
+    </div>
+    <div style="flex:1"></div>
+    <div class="dfoot"><span style="width:10px;height:10px;border-radius:5px;background:${apiKey() ? 'var(--okDot)' : 'var(--off)'};flex-shrink:0"></span>
+      <span style="flex:1">${apiKey() ? (gConfigured() && S.state.settings.gConnected ? 'جاهز · حساب جوجل مربوط' : 'جاهز') : 'أضف مفتاح Claude'}</span></div>`;
+}
+
+function header(title){
+  return `<header class="top"><button class="icon flat" data-act="go" data-to="chat" aria-label="رجوع إلى الدردشة">${I.back}</button><h1 style="text-align:center">${title}</h1><button class="icon flat" data-act="menu" aria-label="فتح القائمة">${I.menu}</button></header>`;
+}
+function renderSearch(){
+  const q = (S.ui.q || '').trim();
+  const list = S.archive.filter(c => !q || c.title.includes(q));
+  $('#screen').innerHTML = header('البحث في المحادثات') + `
+  <div class="scroll">
+    <div class="field"><label for="sq" class="sr">ابحث</label><input class="inp" id="sq" placeholder="ابحث في عناوين محادثاتك السابقة…" value="${esc(S.ui.q || '')}"></div>
+    ${list.length ? `<div class="list">${list.map(c => `<div class="li">
+        <button data-act="openchat" data-id="${c.id}" style="flex:1;min-width:0;border:none;background:transparent;text-align:right;padding:4px 0;display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">${esc(c.title)}</span>
+          <span style="font-size:12px;color:var(--mut)">${new Date(c.ts).toLocaleString('ar', {dateStyle:'medium', timeStyle:'short'})}</span>
+        </button>
+        <button class="cbtn" data-act="delchat" data-id="${c.id}" aria-label="حذف المحادثة">${I.trash}</button></div>`).join('')}</div>`
+      : `<p class="muted" style="text-align:center;padding:30px 0">${S.archive.length ? 'لا توجد نتائج.' : 'لا توجد محادثات سابقة بعد. حين تبدأ محادثة جديدة تُحفظ القديمة هنا.'}</p>`}
+  </div>`;
+  const i = $('#sq'); if (i && S.ui.qFocus) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+function renderAbout(){
+  $('#screen').innerHTML = header('حول التطبيق') + `
+  <div class="scroll">
+    <div class="center" style="padding:20px 0"><div class="halo" style="width:150px;height:150px"><span class="logo" style="width:96px;height:96px">${I.logo}</span></div><b style="font-size:22px">مساعدي</b><span class="muted">مساعدك الشخصي دائمًا</span></div>
+    <div class="card"><p class="muted" style="color:var(--ink2)">مساعد شخصي مستقل يعمل على هاتفك بعقل Claude. يتحدث معك بالعربية، ويبحث في الإنترنت، ويقرأ بريدك وملفاتك حسب الصلاحيات التي تحددها، ويجهّز لك الرسائل وينفّذ المهام المتكررة.</p></div>
+    <div class="list">
+      <div class="li"><span style="flex:1">بياناتك ومفاتيحك</span><span class="muted">على هذا الجهاز فقط</span></div>
+      <div class="li"><span style="flex:1">الإصدار</span><span class="muted">1.0</span></div>
+    </div>
+  </div>`;
+}
+function renderHelp(){
+  const qa = [
+    ['كيف أحصل على مفتاح Claude؟', '١) افتح console.anthropic.com وأنشئ حسابًا.\n٢) من Billing اشحن رصيدًا (5 دولارات تكفي مدة طويلة للاستخدام الشخصي).\n٣) من API Keys اضغط Create Key وانسخه.\n٤) الصقه في الإعدادات هنا.'],
+    ['كيف أربط جيميل ودرايف؟', '١) افتح console.cloud.google.com وأنشئ مشروعًا جديدًا.\n٢) من APIs & Services فعّل Gmail API وGoogle Drive API.\n٣) من OAuth consent screen اختر External، وأضف بريدك في Test users.\n٤) من Credentials أنشئ OAuth client ID من نوع Web application، وفي Authorized JavaScript origins ضع رابط هذا التطبيق: ' + location.origin + '\n٥) انسخ Client ID والصقه في الإعدادات، ثم اضغط «ربط حساب جوجل» في الصلاحيات.'],
+    ['كيف أرسل بريدًا؟', 'اكتب مثلًا: «أرسل لشريكي رسالة أشكره فيها». تظهر الرسالة في «بانتظار موافقتك»، أو تُرسل مباشرة إذا جعلت صلاحية جيميل «تلقائي».'],
+    ['متى تعمل المهام المتكررة؟', 'حين تفتح التطبيق يخبرك بالمهام التي حان وقتها لتشغّلها بضغطة، ويمكنك تشغيل أي مهمة متى شئت.'],
+    ['كم تكلفة الاستخدام؟', 'تدفع لأنثروبيك حسب استخدامك فقط. «سريع» هو الأرخص، و«قوي» الأغلى. تابع رصيدك من console.anthropic.com.']
+  ];
+  $('#screen').innerHTML = header('مساعدة ودعم') + `<div class="scroll">${qa.map(x => `<details class="card faq"><summary>${x[0]}</summary><p class="muted" style="margin-top:8px;color:var(--ink2);white-space:pre-line">${esc(x[1])}</p></details>`).join('')}</div>`;
+}
+
+function renderScreen(){
+  const el = $('#screen');
+  if (S.screen === 'chat') {
+    el.innerHTML = `
+      ${WAVES}
+      <header class="top">
+        <button class="icon flat" data-act="go" data-to="search" aria-label="البحث في المحادثات">${I.search}</button>
+        <div class="ttl"><b class="brand">مساعدي</b><span class="st" id="status"></span></div>
+        <button class="icon flat" data-act="menu" aria-label="فتح القائمة">${I.menu}<span id="hbadge"></span></button>
+      </header>
+      <div class="scroll" id="chatScroll"><div id="notice"></div><div id="due"></div><div id="pend" class="sec"></div><div id="msgs" style="display:flex;flex-direction:column;gap:12px;flex:1"></div></div>
+      <div id="attach"></div>
+      <footer class="composer" id="cbox"></footer>
+      <input type="file" id="filein" accept="image/*,.txt,.csv,.md,.json,.html,.js,.py" hidden>`;
+    renderStatus(); renderNotice(); renderDue(); renderPending(); renderMessages(); renderComposer(); renderAttach(); scrollEnd();
+  } else if (S.screen === 'profile') renderProfile();
+  else if (S.screen === 'tasks') renderTasks();
+  else if (S.screen === 'perms') renderPerms();
+  else if (S.screen === 'settings') renderSettings();
+  else if (S.screen === 'search') renderSearch();
+  else if (S.screen === 'about') renderAbout();
+  else if (S.screen === 'help') renderHelp();
+  if (S.screen !== 'chat') $('#screen').classList.remove('empty');
+}
+
+function renderStatus(){
+  const s = $('#status'); if (!s) return;
+  if (!S.ready) { s.className = 'st off'; s.innerHTML = '<i></i><span>جارٍ التحميل…</span>'; }
+  else if (!apiKey()) { s.className = 'st off'; s.innerHTML = '<i></i><span>أضف المفتاح</span>'; }
+  else if (S.busy) { s.className = 'st busy'; s.innerHTML = '<i></i><span>يعمل…</span>'; }
+  else { s.className = 'st'; s.innerHTML = '<i></i><span>جاهز</span>'; }
+  const b = $('#hbadge'); if (b) { const w = waiting().length; b.className = w ? 'badge' : ''; b.textContent = w || ''; }
+}
+function renderNotice(){
+  const n = $('#notice'); if (!n) return;
+  if (S.ready && !apiKey()) n.innerHTML = `<div class="card" style="display:flex;flex-direction:column;gap:10px;background:var(--accSoft)"><b style="font-size:15px;color:var(--accInk)">خطوة أخيرة لتشغيل المساعد</b><p class="muted" style="color:var(--ink2)">أضف مفتاح Claude الخاص بك من الإعدادات، وبعدها يعمل كل شيء.</p><button class="btn pri" data-act="go" data-to="settings">إضافة المفتاح</button></div>`;
+  else if (!navigator.onLine) n.innerHTML = `<div class="warnbox">لا يوجد اتصال بالإنترنت.</div>`;
+  else n.innerHTML = '';
+}
+function renderDue(){
+  const d = $('#due'); if (!d) return;
+  const due = S.state.tasks.filter(isDue), run = S.running.size;
+  if (run) { d.innerHTML = `<div class="card row" style="padding:12px 14px"><span class="dots"><i></i><i></i><i></i></span><span style="flex:1;font-size:14px">جارٍ تنفيذ ${run === 1 ? 'مهمة متكررة' : run + ' مهام'}…</span></div>`; return; }
+  if (!due.length) { d.innerHTML = ''; return; }
+  d.innerHTML = `<div class="card row" style="padding:12px 14px;gap:10px">
+      <span class="svc" style="background:var(--accSoft);color:var(--accInk);width:36px;height:36px">${I.repeat.replace('<svg','<svg width="18" height="18"')}</span>
+      <span style="flex:1;font-size:14px;line-height:1.5">${due.length === 1 ? 'مهمة «' + esc(due[0].title) + '» حان وقتها' : due.length + ' مهام حان وقتها'}</span>
+      <button class="btn pri" data-act="rundue" style="height:40px">تشغيل</button></div>`;
+}
+function renderPending(){
+  const el = $('#pend'); if (!el) return;
+  const list = waiting();
+  if (!list.length) { el.innerHTML = ''; renderStatus(); return; }
+  el.innerHTML = `<h2>بانتظار موافقتك (${list.length})</h2>` + list.map(it => {
+    const ed = S.ui.editing[it.id], busy = S.ui.busy[it.id], err = S.ui.err[it.id];
+    return `<div class="card pend">
+      <div class="head"><span class="ic">${I.mail}</span><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600">${esc(it.summary)}</div><div style="font-size:12px;color:var(--mut)">جيميل · جهّزه المساعد ${new Date(it.createdAt).toLocaleTimeString('ar', {timeStyle:'short'})}</div></div></div>
+      ${ed ? `
+        <div class="field"><label for="to_${it.id}">إلى</label><input class="inp" id="to_${it.id}" dir="ltr" value="${esc(it.input.to.join(', '))}"></div>
+        <div class="field"><label for="su_${it.id}">العنوان</label><input class="inp" id="su_${it.id}" value="${esc(it.input.subject)}"></div>
+        <div class="field"><label for="bo_${it.id}">النص</label><textarea class="inp" id="bo_${it.id}" rows="7">${esc(it.input.body)}</textarea></div>
+        <div class="acts"><button class="btn pri" data-act="saveedit" data-id="${it.id}">حفظ</button><button class="btn" data-act="canceledit" data-id="${it.id}">إلغاء</button></div>`
+      : `
+        <div style="font-size:13px"><b>العنوان:</b> ${esc(it.input.subject || '(بدون عنوان)')}</div>
+        <div class="body">${esc(it.input.body)}</div>
+        ${err ? `<div class="badt">${esc(err)}</div>` : ''}
+        <div class="acts">
+          <button class="btn pri" data-act="approve" data-id="${it.id}" ${busy ? 'disabled' : ''}>${busy ? 'جارٍ الإرسال…' : 'موافقة وإرسال'}</button>
+          <button class="btn" data-act="edit" data-id="${it.id}" ${busy ? 'disabled' : ''}>تعديل</button>
+          <button class="btn danger" data-act="reject" data-id="${it.id}" ${busy ? 'disabled' : ''} aria-label="إلغاء الرسالة">${I.x}</button>
+        </div>`}
+    </div>`;
+  }).join('');
+  renderStatus();
+}
+function quickCards(){
+  const q = [
+    ['search', 'var(--accSoft)', 'var(--accInk)', 'بحث', 'في بريدك وملفاتك', 'ابحث في بريدي عن آخر الرسائل المهمة ولخّصها لي'],
+    ['trans', 'var(--warnSoft)', 'var(--warn)', 'ترجمة', 'عربي، فرنسي، إنجليزي', 'ترجم لي هذا النص إلى الفرنسية: '],
+    ['chart', 'var(--okSoft)', 'var(--ok)', 'تحليل', 'طلبات ومبيعات متجرك', 'حلّل طلبات متجري خلال آخر أسبوع'],
+    ['code', 'var(--vioSoft)', 'var(--vio)', 'برمجة', 'اكتب وأصلح الشيفرة', 'اكتب لي شيفرة '],
+  ];
+  return `<div class="quick">` + q.map(x => `<button class="qk" data-act="quick" data-q="${esc(x[5])}" data-send="${x[5].endsWith(' ') ? '0' : '1'}"><span class="ic" style="background:${x[1]};color:${x[2]}">${I[x[0]]}</span><b>${x[3]}</b><span>${x[4]}</span></button>`).join('') + `</div>`;
+}
+function greeting(){
+  const n = S.state.profile.name;
+  const sug = [
+    ['mail', 'لخّص بريدي المهم', 'لخّص لي أهم رسائل بريدي غير المقروءة خلال آخر يومين', 1],
+    ['chart', 'حلّل مبيعات متجري', 'حلّل طلبات متجري خلال آخر 7 أيام', 1],
+    ['trans', 'ترجم لي نصًا', 'ترجم لي هذا النص إلى الفرنسية: ', 0],
+    ['code', 'اكتب كود برمجي', 'اكتب لي كود ', 0]
+  ];
+  return `<div class="greet">
+    <div class="halo"><span class="logo">${I.logo}</span></div>
+    <h2>مرحبًا بك${n ? ' يا ' + esc(n) : ''} مجددًا!</h2>
+    <p>كيف يمكنني مساعدتك اليوم؟</p>
+    <div class="sugg">${sug.map(s => `<button data-act="quick" data-q="${esc(s[2])}" data-send="${s[3]}"><span>${I[s[0]]}</span><b>${s[1]}</b></button>`).join('')}</div>
+  </div>`;
+}
+function msgHTML(m, i){
+  if (m.role === 'user') return `<div class="msg u"><div class="bub">${m.file ? `<span class="fchip">${I.clip}${esc(m.file)}</span>` : ''}${esc(m.text)}</div></div>`;
+  const body = m.pending && !m.text ? '<span class="dots" aria-label="يكتب"><i></i><i></i><i></i></span>' : md(m.text);
+  return `<div class="msg a${m.error ? ' err' : ''}"><div class="bub" ${m.pending ? 'id="lastbub"' : ''}>${body}</div>${m.pending ? '' : `<div class="msgacts"><button data-act="copy" data-i="${i}">نسخ</button></div>`}</div>`;
+}
+function renderMessages(){
+  const el = $('#msgs'); if (!el) return;
+  el.innerHTML = S.chat.length ? S.chat.map(msgHTML).join('') : greeting();
+  $('#screen').classList.toggle('empty', !S.chat.length);
+}
+function updateLast(){ const b = $('#lastbub'); const last = S.chat[S.chat.length - 1]; if (b && last) { b.innerHTML = md(last.text) || '<span class="dots"><i></i><i></i><i></i></span>'; scrollEnd(true); } }
+function scrollEnd(soft){ const s = $('#chatScroll'); if (!s) return; if (soft && s.scrollHeight - s.scrollTop - s.clientHeight > 160) return; s.scrollTop = s.scrollHeight; }
+function renderComposer(){
+  const c = $('#cbox'); if (!c) return;
+  const prev = $('#inp') ? $('#inp').value : '';
+  c.innerHTML = `
+    ${S.busy ? `<button class="round send" data-act="stop" aria-label="إيقاف">${I.stop}</button>` : `<button class="round send" data-act="send" aria-label="إرسال">${I.plane}</button>`}
+    <div class="pill">
+      <button class="cbtn" data-act="attach" aria-label="إرفاق ملف">${I.clip}</button>
+      <label for="inp" class="sr">اكتب رسالتك</label>
+      <textarea id="inp" rows="1" placeholder="اكتب رسالتك هنا…"></textarea>
+    </div>
+    <button class="round mic${S.listening ? ' on' : ''}" id="micbtn" data-act="mic" aria-label="إدخال صوتي">${I.mic}</button>`;
+  const t = $('#inp'); t.value = prev; grow(t);
+}
+function renderAttach(){
+  const el = $('#attach'); if (!el) return;
+  const a = S.attach;
+  el.innerHTML = a ? `<div class="attrow"><span class="fchip">${I.clip}${esc(a.name)}</span><button class="cbtn" data-act="unattach" aria-label="إزالة المرفق">${I.x}</button></div>` : '';
+}
+function grow(t){ t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; }
+
+/* ---------- الملف الشخصي ---------- */
+function renderProfile(){
+  const p = S.state.profile, n = displayName();
+  $('#screen').innerHTML = header('الملف الشخصي') + `
+  <div class="scroll">
+    <div class="center"><div class="big-av">${esc((n || 'م').trim().charAt(0))}</div><b style="font-size:20px">${esc(n || 'اكتب اسمك')}</b>${p.country ? `<span style="font-size:13px;color:var(--mut)">${esc(p.country)}</span>` : ''}</div>
+    <div class="sec"><h2>المعلومات الأساسية</h2><div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="field"><label for="pf_name">الاسم</label><input class="inp" id="pf_name" data-bind="profile.name" value="${esc(p.name)}" placeholder="${esc(S.meName || 'اسمك')}"></div>
+      <div class="grid2">
+        <div class="field"><label for="pf_country">البلد</label><input class="inp" id="pf_country" data-bind="profile.country" value="${esc(p.country)}" placeholder="مثل: جيبوتي"></div>
+        <div class="field"><label for="pf_tz">المنطقة الزمنية</label><input class="inp" id="pf_tz" data-bind="profile.tz" value="${esc(p.tz)}" placeholder="مثل: توقيت جيبوتي +3"></div>
+      </div>
+      <div class="field"><label for="pf_about">نبذة يعرفها المساعد عنك</label><textarea class="inp" id="pf_about" data-bind="profile.about" rows="3" placeholder="عملك، اهتماماتك، طريقة تفضّلها في الردود…">${esc(p.about)}</textarea></div>
+    </div></div>
+    <div class="sec"><h2>مشاريعي</h2><div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="chips">${(p.projects || []).map((x, i) => `<span class="chipx">${esc(x)}<button data-act="delproj" data-i="${i}" aria-label="حذف ${esc(x)}">${I.x.replace('<svg','<svg width="14" height="14"')}</button></span>`).join('') || '<span class="muted">لا توجد مشاريع بعد.</span>'}</div>
+      <form class="row" data-form="proj" style="gap:8px"><label for="newproj" class="sr">مشروع جديد</label><input class="inp" id="newproj" placeholder="اسم مشروع جديد"><button class="btn pri" type="submit">إضافة</button></form>
+    </div></div>
+    <div class="sec"><h2>جهات الاتصال المهمة</h2>
+      <p class="muted" style="padding:0 4px">يستخدمها المساعد حين تقول مثلًا: «أرسل لشريكي».</p>
+      ${(p.contacts || []).length ? `<div class="list">${p.contacts.map((c, i) => `<div class="li"><span class="av" style="background:var(--okSoft);color:var(--ok)">${esc(c.name.charAt(0))}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><b style="font-size:14px">${esc(c.name)}${c.relation ? ` <span style="font-weight:400;color:var(--mut);font-size:12px">· ${esc(c.relation)}</span>` : ''}</b><span dir="ltr" style="font-size:12px;color:var(--mut);text-align:right">${esc(c.email || 'بلا بريد')}</span></span><button class="cbtn" data-act="delcontact" data-i="${i}" aria-label="حذف ${esc(c.name)}">${I.trash}</button></div>`).join('')}</div>` : ''}
+      <form class="card" data-form="contact" style="display:flex;flex-direction:column;gap:10px">
+        <div class="grid2"><div class="field"><label for="c_name">الاسم</label><input class="inp" id="c_name" required></div><div class="field"><label for="c_rel">العلاقة</label><input class="inp" id="c_rel" placeholder="أخ، صديق، شريك…"></div></div>
+        <div class="field"><label for="c_mail">البريد الإلكتروني</label><input class="inp" id="c_mail" type="email" dir="ltr"></div>
+        <button class="btn" type="submit">${I.plus}إضافة جهة اتصال</button>
+      </form>
+    </div>
+  </div>`;
+}
+
+/* ---------- المهام ---------- */
+function renderTasksIfOpen(){ if (S.screen === 'tasks') renderTasks(); }
+function taskForm(f){
+  const hours = Array.from({length:24}, (_, h) => `<option value="${h}" ${+f.hour === h ? 'selected' : ''}>${hourLabel(h)}</option>`).join('');
+  return `<form class="card" data-form="task" style="display:flex;flex-direction:column;gap:12px">
+    <b style="font-size:15px">${f.id ? 'تعديل المهمة' : 'مهمة متكررة جديدة'}</b>
+    <div class="field"><label for="tf_title">العنوان</label><input class="inp" id="tf_title" required value="${esc(f.title || '')}" placeholder="مثل: تذكير بمتابعة الشركاء"></div>
+    <div class="field"><label for="tf_prompt">ماذا يفعل المساعد؟</label><textarea class="inp" id="tf_prompt" rows="4" required placeholder="اكتب التعليمات كما لو تطلبها في المحادثة">${esc(f.prompt || '')}</textarea></div>
+    <div class="grid2">
+      <div class="field"><label for="tf_freq">التكرار</label><select class="inp" id="tf_freq"><option value="daily" ${f.freq !== 'weekly' ? 'selected' : ''}>يوميًا</option><option value="weekly" ${f.freq === 'weekly' ? 'selected' : ''}>أسبوعيًا</option></select></div>
+      <div class="field"><label for="tf_hour">الوقت</label><select class="inp" id="tf_hour">${hours}</select></div>
+    </div>
+    <div class="field" id="tf_daywrap" style="${f.freq === 'weekly' ? '' : 'display:none'}"><label for="tf_day">اليوم</label><select class="inp" id="tf_day">${DAYS.map((d, i) => `<option value="${i}" ${+f.weekday === i ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+    <div class="row" style="gap:8px"><button class="btn pri" type="submit" style="flex:1">حفظ</button><button class="btn" type="button" data-act="canceltask" style="flex:1">إلغاء</button></div>
+  </form>`;
+}
+function renderTasks(){
+  const f = S.ui.taskForm;
+  $('#screen').innerHTML = header('المهام المتكررة') + `
+  <div class="scroll">
+    <p class="muted" style="padding:0 4px">ينفّذها المساعد في موعدها حين تفتح التطبيق، أو متى ضغطت «تشغيل الآن». أي بريد يجهّزه يظهر في «بانتظار موافقتك» إلا إذا جعلت صلاحية جيميل «تلقائي».</p>
+    ${f ? taskForm(f) : `<button class="btn pri wide" data-act="newtask" style="height:50px">${I.plus}مهمة متكررة جديدة</button>`}
+    ${S.state.tasks.map(t => {
+      const run = S.running.has(t.id), due = isDue(t), conf = S.ui.confirm === t.id;
+      return `<div class="card task" style="display:flex;flex-direction:column;gap:12px">
+        <div class="row" style="align-items:flex-start">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><b style="font-size:15px">${esc(t.title)}</b><span style="font-size:12px;color:var(--mut);line-height:1.6">${esc(t.prompt.length > 90 ? t.prompt.slice(0, 90) + '…' : t.prompt)}</span></div>
+          <button class="tg" data-act="toggletask" data-id="${t.id}" aria-pressed="${t.on}" aria-label="تشغيل أو إيقاف ${esc(t.title)}"><span></span></button>
+        </div>
+        <div class="meta">${I.clock}<span style="flex:1">${whenText(t)}</span>${run ? '<span class="okt">يعمل الآن…</span>' : due ? '<span class="badt">حان وقتها</span>' : t.on ? '<span class="okt">مفعّلة</span>' : '<span style="font-size:12px;color:var(--mut)">متوقفة</span>'}</div>
+        <div class="row" style="gap:8px">
+          <button class="btn" data-act="runtask" data-id="${t.id}" ${run ? 'disabled' : ''} style="flex:1">${I.play.replace('<svg','<svg width="16" height="16"')}تشغيل الآن</button>
+          <button class="btn" data-act="edittask" data-id="${t.id}" aria-label="تعديل ${esc(t.title)}">${I.edit}</button>
+          <button class="btn danger" data-act="deltask" data-id="${t.id}" aria-label="${conf ? 'تأكيد الحذف' : 'حذف ' + esc(t.title)}">${conf ? 'تأكيد الحذف' : I.trash}</button>
+        </div>
+        ${t.lastError ? `<div class="badt">${esc(t.lastError)}</div>` : ''}
+        ${t.lastResult ? `<details class="res"><summary>آخر نتيجة · ${new Date(t.lastRun).toLocaleString('ar', {dateStyle:'medium', timeStyle:'short'})}</summary><div class="bub" style="padding:8px 0 0;border:none;background:none">${md(t.lastResult)}</div></details>` : ''}
+      </div>`;
+    }).join('') || '<p class="muted" style="text-align:center">لا توجد مهام بعد.</p>'}
+  </div>`;
+}
+
+/* ---------- الصلاحيات ---------- */
+function renderPerms(){
+  const p = S.state.perms, st = S.state.settings, gOn = gConfigured() && st.gConnected, tst = S.ui.test;
+  const segBtns = (id, levels) => `<div class="seg" role="radiogroup" aria-label="الصلاحية" style="grid-template-columns:repeat(${levels.length},minmax(0,1fr))">${levels.map(l => `<button role="radio" aria-checked="${p[id] === l}" data-act="perm" data-id="${id}" data-l="${l}">${LV[l]}</button>`).join('')}</div>`;
+  $('#screen').innerHTML = header('الصلاحيات') + `
+  <div class="scroll">
+    <div class="note">${I.shield}<span><b>قراءة فقط:</b> يطّلع ولا يغيّر شيئًا. <b>بموافقتك:</b> يجهّز الرسالة وأنت تضغط إرسال. <b>تلقائي:</b> يرسل مباشرة حين تطلب منه.</span></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row"><span class="svc" style="background:var(--accSoft);color:var(--accInk)">${I.search.replace('<svg','<svg width="20" height="20"')}</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">البحث في الإنترنت</b><span style="font-size:12px;color:var(--mut)">أخبار وأسعار ومعلومات حديثة</span></div>
+        <button class="tg" data-act="perm" data-id="web" data-l="${p.web ? 0 : 1}" aria-pressed="${!!p.web}" aria-label="البحث في الإنترنت"><span></span></button></div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div class="row"><span class="svc" style="background:var(--badSoft);color:var(--bad)">G</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">حساب جوجل</b><span class="${gOn ? 'okt' : 'badt'}">${gOn ? 'مربوط' : gConfigured() ? 'غير مربوط' : 'يحتاج معرّف جوجل من الإعدادات'}</span></div>
+        ${gConfigured() ? `<button class="btn ${gOn ? '' : 'pri'}" data-act="gconnect" style="height:40px">${gOn ? 'إعادة الربط' : 'ربط حساب جوجل'}</button>` : `<button class="btn" data-act="go" data-to="settings" style="height:40px">الإعدادات</button>`}</div>
+      <div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:14px">جيميل</b>${segBtns('gmail', [0,1,2,3])}</div>
+      <div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:14px">جوجل درايف</b>${segBtns('drive', [0,1])}</div>
+      ${gOn ? `<button class="btn ghost" data-act="test" data-id="google" style="align-self:flex-start">اختبار الاتصال</button>` : ''}
+      ${tst.google ? `<span class="${tst.google.ok ? 'okt' : 'badt'}">${esc(tst.google.text)}</span>` : ''}
+    </div>
+    <div class="card row" style="border:1px dashed var(--line)">
+      <span class="svc" style="background:var(--okSoft);color:var(--ok)">ش</span>
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">شوبيفاي</b><span style="font-size:12px;color:var(--mut);line-height:1.6">يحتاج خادمًا صغيرًا لأن شوبيفاي لا يسمح بالاتصال المباشر من التطبيق. سنضيفه في المرحلة التالية.</span></div>
+    </div>
+    <div class="card row" style="border:1px dashed var(--line)">
+      <span class="svc" style="background:var(--okSoft);color:var(--ok)">و</span>
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">واتساب</b><span style="font-size:12px;color:var(--mut);line-height:1.6">غير متاح: لا يوجد ربط رسمي بواتساب الشخصي.</span></div>
+    </div>
+    <div class="card"><b style="font-size:14px">أمان</b><p class="muted" style="margin-top:4px">المساعد لا يحذف رسائل أو ملفات ولا يدفع أي شيء. ومفاتيحك محفوظة على جهازك فقط.</p></div>
+  </div>`;
+}
+async function testService(){
+  S.ui.test.google = { ok:true, text:'جارٍ الاختبار…' }; renderPerms();
+  try { const r = await gfetch(GM + 'profile'); S.ui.test.google = { ok:true, text:'متصل: ' + r.emailAddress }; }
+  catch(e) { S.ui.test.google = { ok:false, text:e.message }; }
+  if (S.screen === 'perms') renderPerms();
+}
+
+/* ---------- الإعدادات ---------- */
+function seg(name, label, opts, cur){
+  return `<div class="seg" role="radiogroup" aria-label="${label}" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))">${opts.map(o => `<button role="radio" aria-checked="${cur === o[0]}" data-act="set" data-k="${name}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+}
+function renderSettings(){
+  const st = S.state.settings, conf = S.ui.confirm;
+  $('#screen').innerHTML = header('الإعدادات') + `
+  <div class="scroll">
+    <div class="sec"><h2>مفتاح Claude</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <div class="field"><label for="st_key">المفتاح الخاص بك</label><input class="inp" id="st_key" data-bind="settings.apiKey" type="password" dir="ltr" autocomplete="off" value="${esc(st.apiKey || '')}" placeholder="sk-ant-..."></div>
+      <p class="muted">تحصل عليه من <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. يُحفظ على هاتفك فقط ولا يُرسل إلا إلى Claude.</p>
+      ${apiKey() ? '<span class="okt">المفتاح محفوظ</span>' : '<span class="badt">لا يوجد مفتاح بعد</span>'}
+    </div></div>
+    <div class="sec"><h2>معرّف جوجل (لجيميل ودرايف)</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <div class="field"><label for="st_gid">Client ID</label><input class="inp" id="st_gid" data-bind="settings.gClientId" dir="ltr" autocomplete="off" value="${esc(st.gClientId || '')}" placeholder="xxxx.apps.googleusercontent.com"></div>
+      <p class="muted">اختياري. طريقة الحصول عليه في «مساعدة ودعم».</p>
+    </div></div>
+    <div class="sec"><h2>المظهر</h2>${seg('theme', 'المظهر', [['light','فاتح'],['dark','داكن'],['auto','تلقائي']], st.theme)}</div>
+    <div class="sec"><h2>طول الردود</h2>${seg('length', 'طول الردود', [['short','قصيرة'],['long','مفصّلة']], st.length)}</div>
+    <div class="sec"><h2>قوة المساعد</h2>${seg('tier', 'قوة المساعد', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier)}<p class="muted" style="padding:0 4px">«سريع» أرخص، و«قوي» أفضل للتحليل والبرمجة لكنه أغلى.</p></div>
+    <div class="sec"><h2>البيانات</h2>
+      <div class="card"><p class="muted">كل بياناتك محفوظة على هذا الجهاز فقط.</p></div>
+      <div class="list">
+        <div class="li"><span style="flex:1;font-size:14px">مسح سجل المحادثة</span><button class="btn danger" data-act="clearchat">${conf === 'chat' ? 'تأكيد المسح' : 'مسح'}</button></div>
+        <div class="li"><span style="flex:1;font-size:14px">مسح سجل الموافقات القديمة</span><button class="btn" data-act="clearpend">مسح</button></div>
+      </div>
+    </div>
+    <p class="muted" style="text-align:center;padding:8px 0">مساعدي · الإصدار 1.0</p>
+  </div>`;
+}
+
+/* ---------- الأحداث ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, id = el.dataset.id;
+  if (a !== 'deltask' && a !== 'clearchat') S.ui.confirm = null;
+  switch (a) {
+    case 'menu': renderDrawer(); $('#app').classList.add('menu'); break;
+    case 'closemenu': $('#app').classList.remove('menu'); break;
+    case 'go': go(el.dataset.to); break;
+    case 'newchat': newChat(); break;
+    case 'openchat': openChat(id); break;
+    case 'delchat': delChat(id); break;
+    case 'addapp': S.ui.addApp = !S.ui.addApp; renderPerms(); break;
+    case 'pickapp': { const i = $('#newapp'); if (i) { i.value = el.dataset.name; i.focus(); } break; }
+    case 'delapp': S.state.apps = S.state.apps.filter(x => x.id !== id); saveState(); renderPerms(); break;
+    case 'copyreq': { const a = S.state.apps.find(x => x.id === id); if (!a) return; const txt = 'أضف ' + a.name + ' إلى تطبيق مساعدي، فقد ربطته في الموصلات.'; if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('نُسخ الطلب. الصقه لي في محادثة Claude'), () => toast(txt)); else toast(txt); break; }
+    case 'quick': { const t = $('#inp'); if (el.dataset.send === '1') sendMsg(el.dataset.q); else { t.value = el.dataset.q; grow(t); t.focus(); } break; }
+    case 'send': { const t = $('#inp'); const v = t.value; t.value = ''; grow(t); sendMsg(v); break; }
+    case 'stop': if (S.abort) S.abort.abort(); break;
+    case 'copy': { const m = S.chat[+el.dataset.i]; if (m && navigator.clipboard) navigator.clipboard.writeText(m.text).then(() => toast('نُسخ النص'), () => toast('تعذر النسخ')); break; }
+    case 'micnav': {
+      go('chat');
+      if (!S.dict) { toast('الإدخال الصوتي غير متاح في هذا العرض. استخدم زر الميكروفون في لوحة المفاتيح.'); break; }
+      if (!S.listening) S.dict.start().catch(err => { if (err && err.code === 'not_granted') { S.dict = null; } });
+      break;
+    }
+    case 'attach': { const f = $('#filein'); if (f) f.click(); break; }
+    case 'unattach': S.attach = null; renderAttach(); break;
+    case 'mic': {
+      if (!S.dict) { toast('الإدخال الصوتي غير متاح هنا. استخدم زر الميكروفون في لوحة مفاتيح هاتفك.'); return; }
+      if (S.listening) { S.dict.stop().catch(() => {}); }
+      else { S.dict.start().catch(err => { if (err && err.code === 'not_granted') { S.dict = null; renderComposer(); } }); }
+      break;
+    }
+    case 'approve': approve(id); break;
+    case 'reject': reject(id); break;
+    case 'edit': S.ui.editing[id] = true; renderPending(); break;
+    case 'canceledit': delete S.ui.editing[id]; renderPending(); break;
+    case 'saveedit': {
+      const it = S.pending.find(x => x.id === id); if (!it) return;
+      const to = asList($('#to_' + id).value);
+      if (!to.length || !to.every(isEmail)) { toast('تأكد من عنوان البريد'); return; }
+      it.input = { to, subject:$('#su_' + id).value, body:$('#bo_' + id).value };
+      it.summary = 'إرسال بريد إلى ' + to.join('، ');
+      delete S.ui.editing[id]; savePending(); renderPending(); break;
+    }
+    case 'rundue': runDue(); break;
+    case 'delproj': S.state.profile.projects.splice(+el.dataset.i, 1); saveState(); renderProfile(); break;
+    case 'delcontact': S.state.profile.contacts.splice(+el.dataset.i, 1); saveState(); renderProfile(); break;
+    case 'newtask': S.ui.taskForm = { title:'', prompt:'', freq:'daily', hour:9, weekday:6 }; renderTasks(); break;
+    case 'edittask': { const t = S.state.tasks.find(x => x.id === id); S.ui.taskForm = Object.assign({}, t); renderTasks(); break; }
+    case 'canceltask': S.ui.taskForm = null; renderTasks(); break;
+    case 'toggletask': { const t = S.state.tasks.find(x => x.id === id); t.on = !t.on; if (t.on && !t.lastRun) t.lastRun = Date.now(); saveState(); renderTasks(); renderDrawer(); break; }
+    case 'runtask': runTask(id); break;
+    case 'deltask': if (S.ui.confirm === id) { S.state.tasks = S.state.tasks.filter(x => x.id !== id); S.ui.confirm = null; saveState(); toast('حُذفت المهمة'); } else S.ui.confirm = id; renderTasks(); renderDrawer(); break;
+    case 'perm': S.state.perms[id] = +el.dataset.l; saveState(); renderPerms(); break;
+    case 'test': testService(id); break;
+    case 'gconnect': gConnect(true).then(() => { toast('تم ربط حساب جوجل'); if (S.screen === 'perms') renderPerms(); renderDrawer(); }).catch(err => toast(err.message)); break;
+    case 'set': S.state.settings[el.dataset.k] = el.dataset.v; saveState(); applyTheme(); renderSettings(); break;
+    case 'clearchat': if (S.ui.confirm === 'chat') { S.chat = []; saveChat(); S.ui.confirm = null; toast('مُسح سجل المحادثة'); } else S.ui.confirm = 'chat'; renderSettings(); break;
+    case 'clearpend': S.pending = waiting(); savePending(); toast('مُسح السجل القديم'); break;
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') $('#app').classList.remove('menu');
+  if (e.target.id === 'inp' && e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(pointer:fine)').matches) {
+    e.preventDefault(); const v = e.target.value; e.target.value = ''; grow(e.target); sendMsg(v);
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'inp') grow(e.target);
+  if (e.target.id === 'sq') { S.ui.q = e.target.value; S.ui.qFocus = true; renderSearch(); }
+});
+document.addEventListener('change', e => {
+  const b = e.target.dataset && e.target.dataset.bind;
+  if (b) { const [k, f] = b.split('.'); S.state[k][f] = e.target.value.trim(); if (f === 'gClientId') { S.state.settings.gConnected = false; if (gConfigured()) loadGis().catch(() => {}); } saveState(); renderDrawer(); if (k === 'settings') renderSettings(); }
+  if (e.target.id === 'filein') {
+    const file = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    if (file.type.startsWith('image/')) {
+      if (!S.canImages) { toast('إرسال الصور غير متاح هنا.'); return; }
+      if (file.size > 8 * 1024 * 1024) { toast('الصورة كبيرة جدًا (الحد 8 ميغابايت).'); return; }
+      S.attach = { kind:'image', name:file.name, blob:file };
+      renderAttach();
+    } else {
+      if (file.size > 400 * 1024) { toast('الملف كبير. أرفق ملفًا نصيًا أصغر من 400 كيلوبايت.'); return; }
+      file.text().then(t => { S.attach = { kind:'text', name:file.name, text:t.slice(0, 60000) }; renderAttach(); }).catch(() => toast('تعذر قراءة الملف'));
+    }
+  }
+  if (e.target.id === 'tf_freq') { const w = $('#tf_daywrap'); if (w) w.style.display = e.target.value === 'weekly' ? '' : 'none'; }
+});
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target.dataset.form;
+  if (f === 'app') {
+    const v = $('#newapp').value.trim(); if (!v) return;
+    if ((S.state.apps || []).some(a => a.name === v)) { toast('هذا التطبيق مضاف مسبقًا'); return; }
+    S.state.apps = (S.state.apps || []).concat([{ id:'a' + uid6(), name:v, ts:Date.now() }]);
+    S.ui.addApp = false; saveState(); renderPerms(); toast('أُضيف ' + v + ' إلى قائمة الربط');
+  }
+  if (f === 'proj') { const v = $('#newproj').value.trim(); if (!v) return; S.state.profile.projects.push(v); saveState(); renderProfile(); }
+  if (f === 'contact') {
+    const name = $('#c_name').value.trim(), email = $('#c_mail').value.trim(), relation = $('#c_rel').value.trim();
+    if (!name) return; if (email && !isEmail(email)) { toast('البريد غير صحيح'); return; }
+    S.state.profile.contacts.push({ name, email, relation }); saveState(); renderProfile(); toast('أُضيفت جهة الاتصال');
+  }
+  if (f === 'task') {
+    const v = { title:$('#tf_title').value.trim(), prompt:$('#tf_prompt').value.trim(), freq:$('#tf_freq').value, hour:+$('#tf_hour').value, weekday:+$('#tf_day').value };
+    if (!v.title || !v.prompt) return;
+    const cur = S.ui.taskForm;
+    if (cur && cur.id) { const t = S.state.tasks.find(x => x.id === cur.id); Object.assign(t, v); }
+    else S.state.tasks.push(Object.assign({ id:'t' + uid6(), on:true, lastRun:Date.now(), lastResult:'' }, v));
+    S.ui.taskForm = null; saveState(); renderTasks(); renderDrawer(); toast('حُفظت المهمة');
+  }
+});
+if (window.matchMedia) { try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme); } catch(e){} }
+
+/* ---------- الإدخال الصوتي ---------- */
+function makeDictation(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
+  let rec = null, fin = null, st = null;
+  return {
+    start(){ return new Promise((res, rej) => {
+      rec = new SR(); rec.lang = 'ar-SA'; rec.interimResults = false; rec.continuous = false;
+      rec.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal && fin) fin({ text:e.results[i][0].transcript }); };
+      rec.onstart = () => { st && st({ state:'listening' }); res(); };
+      rec.onend = () => st && st({ state:'idle' });
+      rec.onerror = ev => { st && st({ state:'idle' }); if (ev.error === 'not-allowed') rej({ code:'not_granted' }); else rej({ code:ev.error }); };
+      try { rec.start(); } catch(e) { rej(e); }
+    }); },
+    stop(){ try { rec && rec.stop(); } catch(e){} return Promise.resolve(); },
+    onFinal(f){ fin = f; }, onState(f){ st = f; }
+  };
+}
+
+/* ---------- التشغيل ---------- */
+applyTheme(); renderScreen(); renderDrawer();
+(async () => {
+  S.persisted = 'local'; S.canImages = true;
+  const [st, ch, pe, ar] = await Promise.all([store.load('state', null), store.load('chat', null), store.load('pending', null), store.load('archive', null)]);
+  if (st) { const d = defaults(); S.state = { profile:Object.assign(d.profile, st.profile), settings:Object.assign(d.settings, st.settings), perms:Object.assign(d.perms, st.perms), apps:Array.isArray(st.apps) ? st.apps : [], tasks:Array.isArray(st.tasks) ? st.tasks : d.tasks }; }
+  else saveState();
+  if (ar && Array.isArray(ar.items)) S.archive = ar.items;
+  if (ch && Array.isArray(ch.messages)) S.chat = ch.messages;
+  if (pe && Array.isArray(pe.items)) S.pending = pe.items;
+  S.dict = makeDictation();
+  if (S.dict) {
+    S.dict.onState(({state}) => { S.listening = state === 'listening'; const b = $('#micbtn'); if (b) b.classList.toggle('on', S.listening); });
+    S.dict.onFinal(({text}) => { const t = $('#inp'); if (t && text) { t.value = (t.value ? t.value + ' ' : '') + text; grow(t); } });
+  }
+  if (gConfigured()) loadGis().catch(() => {});
+  window.addEventListener('online', renderNotice); window.addEventListener('offline', renderNotice);
+  S.ready = true; applyTheme(); renderScreen(); renderDrawer();
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+})();
+</script>
+</body>
+</html>

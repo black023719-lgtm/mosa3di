@@ -344,7 +344,7 @@ function defaults(){
   const now = Date.now();
   return {
     profile: { name:'', country:'', tz:'', about:'', projects:[], contacts:[] },
-    settings: { theme:'light', length:'short', tier:'default', apiKey:'', gClientId:'', gConnected:false },
+    settings: { theme:'light', length:'short', tier:'default', provider:'gemini', gemKey:'', apiKey:'', gClientId:'', gConnected:false },
     perms: { gmail:2, drive:1, web:1 },
     apps: [],
     tasks: [
@@ -436,7 +436,11 @@ const savePending = () => store.save('pending', () => ({ items: S.pending.slice(
 
 /* ---------- عقل المساعد: Claude عبر مفتاحك ---------- */
 const MODELS = { quick:'claude-haiku-5-5', default:'claude-sonnet-5-5', complex:'claude-opus-5-5' };
-const apiKey = () => (S.state.settings.apiKey || '').trim();
+const claudeKey = () => (S.state.settings.apiKey || '').trim();
+const geminiKey = () => (S.state.settings.gemKey || '').trim();
+const provider = () => S.state.settings.provider === 'claude' ? 'claude' : 'gemini';
+const apiKey = () => provider() === 'claude' ? claudeKey() : geminiKey();
+const keyName = () => provider() === 'claude' ? 'Claude' : 'Gemini';
 const slim = (x, n=7000) => { let s = typeof x === 'string' ? x : JSON.stringify(x); return s.length > n ? s.slice(0, n) + ' …(مقتطع)' : s; };
 const asList = v => (Array.isArray(v) ? v : String(v || '').split(/[,،;\s]+/)).map(s => String(s).trim()).filter(Boolean);
 const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
@@ -460,7 +464,7 @@ async function askClaude(system, messages, opts){
     if (t.length) body.tools = t;
     let res;
     try {
-      res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:opts.signal, headers:{ 'content-type':'application/json', 'x-api-key':apiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify(body) });
+      res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:opts.signal, headers:{ 'content-type':'application/json', 'x-api-key':claudeKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify(body) });
     } catch(e) { if (e && e.name === 'AbortError') throw e; throw new Error('لا يوجد اتصال بالإنترنت أو تعذر الوصول إلى Claude.'); }
     if (!res.ok) { let j = {}; try { j = await res.json(); } catch(e){} throw new Error(apiErr(res.status, j.error && j.error.message)); }
     const blocks = []; let stop = null, buf = '';
@@ -637,8 +641,84 @@ function systemPrompt(){
     st.length === 'long' ? 'أسلوب الردود: مفصّل ومنظم.' : 'أسلوب الردود: قصير ومباشر.'
   ].join('\n');
 }
+const GEM = { quick:['gemini-3.5-flash-lite','gemini-flash-lite-latest','gemini-2.5-flash-lite'], default:['gemini-3.6-flash','gemini-flash-latest','gemini-2.5-flash'], complex:['gemini-3.7-flash','gemini-3.6-flash','gemini-flash-latest','gemini-2.5-flash'] };
+function gemErr(status, msg){
+  if (status === 400 && /API key|API_KEY/i.test(msg || '')) return 'مفتاح Gemini غير صحيح. راجعه في الإعدادات.';
+  if (status === 403) return 'مفتاح Gemini لا يملك صلاحية. أنشئ مفتاحًا جديدًا من aistudio.google.com.';
+  if (status === 429) return 'وصلت إلى حد الاستخدام المجاني في Gemini. انتظر قليلًا ثم حاول، أو اختر «سريع» من الإعدادات.';
+  if (status >= 500) return 'خوادم Gemini مشغولة الآن. حاول بعد قليل.';
+  return 'خطأ من Gemini ' + status + ': ' + String(msg || '').slice(0, 200);
+}
+function toGem(messages){
+  return messages.map(m => {
+    const role = m.role === 'assistant' ? 'model' : 'user';
+    if (Array.isArray(m.content)) return { role, parts: m.content.map(c => c.type === 'image' ? { inlineData:{ mimeType:c.source.media_type, data:c.source.data } } : { text:c.text || '' }) };
+    return { role, parts:[{ text:String(m.content || '') }] };
+  });
+}
+async function askGemini(system, messages, opts){
+  opts = opts || {};
+  const tools = opts.tools || [];
+  const contents = toGem(messages);
+  const list = GEM[S.state.settings.tier] || GEM.default;
+  let mi = S.gemModelIdx || 0, full = '';
+  for (let step = 0; step < 10; step++) {
+    const body = { systemInstruction:{ parts:[{ text:system }] }, contents };
+    if (tools.length) body.tools = [{ functionDeclarations: tools.map(x => ({ name:x.name, description:x.description, parameters:x.inputSchema })) }];
+    else if (S.state.perms.web) body.tools = [{ google_search:{} }];
+    let res;
+    for (;;) {
+      const model = list[Math.min(mi, list.length - 1)];
+      try {
+        res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':streamGenerateContent?alt=sse', { method:'POST', signal:opts.signal, headers:{ 'content-type':'application/json', 'x-goog-api-key':geminiKey() }, body:JSON.stringify(body) });
+      } catch(e) { if (e && e.name === 'AbortError') throw e; throw new Error('لا يوجد اتصال بالإنترنت أو تعذر الوصول إلى Gemini.'); }
+      if (res.status === 404 && mi < list.length - 1) { mi++; continue; }
+      break;
+    }
+    S.gemModelIdx = mi;
+    if (!res.ok) { let j = {}; try { j = await res.json(); } catch(e){} throw new Error(gemErr(res.status, j.error && j.error.message)); }
+    const parts = []; let buf = '', stepText = '';
+    if (full && !/\n$/.test(full)) full += '\n\n';
+    const base = full;
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    for (;;) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream:true });
+      let i;
+      while ((i = buf.search(/\r?\n\r?\n/)) >= 0) {
+        const chunk = buf.slice(0, i); buf = buf.slice(i).replace(/^\r?\n\r?\n/, '');
+        const line = chunk.split(/\r?\n/).find(l => l.startsWith('data:')); if (!line) continue;
+        let ev; try { ev = JSON.parse(line.slice(5)); } catch(e) { continue; }
+        if (ev.error) throw new Error(gemErr(ev.error.code || 0, ev.error.message));
+        const c = ev.candidates && ev.candidates[0];
+        for (const p of (c && c.content && c.content.parts) || []) {
+          if (p.text !== undefined && !p.thought) {
+            const last = parts[parts.length - 1];
+            if (last && last.text !== undefined && !last.functionCall && !p.thoughtSignature) last.text += p.text; else parts.push(Object.assign({}, p));
+            stepText += p.text; full = base + stepText; opts.onText && opts.onText({ text:full });
+          } else parts.push(Object.assign({}, p));
+        }
+      }
+    }
+    if (!stepText) full = base.replace(/\n\n$/, '');
+    const calls = parts.filter(p => p.functionCall);
+    contents.push({ role:'model', parts: parts.length ? parts : [{ text:'' }] });
+    if (!calls.length) return full;
+    const out = [];
+    for (const p of calls) {
+      const tool = tools.find(x => x.name === p.functionCall.name);
+      let result;
+      try { result = tool ? String(await tool.execute(p.functionCall.args || {})) : 'أداة غير معروفة'; } catch(e) { result = 'خطأ: ' + ((e && e.message) || e); }
+      const fr = { name:p.functionCall.name, response:{ result } }; if (p.functionCall.id) fr.id = p.functionCall.id;
+      out.push({ functionResponse:fr });
+    }
+    contents.push({ role:'user', parts:out });
+  }
+  return full;
+}
 async function runAgent(messages, opts){
-  return askClaude(systemPrompt(), messages, Object.assign({ tools:buildTools() }, opts || {}));
+  const o = Object.assign({ tools:buildTools() }, opts || {});
+  return provider() === 'claude' ? askClaude(systemPrompt(), messages, o) : askGemini(systemPrompt(), messages, o);
 }
 const sampleErr = e => String((e && e.message) || e || 'خطأ غير معروف');
 function historyMsgs(){
@@ -659,7 +739,7 @@ async function sendMsg(text){
   text = String(text || '').trim();
   const att = S.attach;
   if ((!text && !att) || S.busy) return;
-  if (!apiKey()) { toast('أضف مفتاح Claude من الإعدادات أولًا'); go('settings'); return; }
+  if (!apiKey()) { toast('أضف مفتاح ' + keyName() + ' من الإعدادات أولًا'); go('settings'); return; }
   S.attach = null; renderAttach();
   const um = { role:'user', text: text || (att && att.kind === 'image' ? 'ما رأيك في هذه الصورة؟' : 'حلّل هذا الملف'), ts:Date.now() };
   if (att) { um.file = att.name; if (att.kind === 'text') um.ctx = att.text.slice(0, 12000); else um.ctx = '(أرفق المستخدم صورة باسم ' + att.name + ')'; }
@@ -710,7 +790,7 @@ const isDue = t => t.on && (t.lastRun || 0) < lastSlot(t);
 const whenText = t => (t.freq === 'daily' ? 'يوميًا' : 'كل ' + DAYS[t.weekday]) + ' · ' + hourLabel(t.hour);
 async function runTask(id){
   const t = S.state.tasks.find(x => x.id === id); if (!t || S.running.has(id)) return;
-  if (!apiKey()) { toast('أضف مفتاح Claude من الإعدادات أولًا'); return; }
+  if (!apiKey()) { toast('أضف مفتاح ' + keyName() + ' من الإعدادات أولًا'); return; }
   S.running.add(id); renderTasksIfOpen(); renderDue();
   try {
     const msgs = [{ role:'user', content: systemPrompt() + '\n\nهذه مهمة متكررة بعنوان «' + t.title + '». نفّذها الآن بالأدوات المتاحة، ثم اكتب النتيجة مختصرة ومنظمة:\n' + t.prompt }];
@@ -756,7 +836,7 @@ function renderDrawer(){
     </div>
     <div style="flex:1"></div>
     <div class="dfoot"><span style="width:10px;height:10px;border-radius:5px;background:${apiKey() ? 'var(--okDot)' : 'var(--off)'};flex-shrink:0"></span>
-      <span style="flex:1">${apiKey() ? (gConfigured() && S.state.settings.gConnected ? 'جاهز · حساب جوجل مربوط' : 'جاهز') : 'أضف مفتاح Claude'}</span></div>`;
+      <span style="flex:1">${apiKey() ? (gConfigured() && S.state.settings.gConnected ? 'جاهز · حساب جوجل مربوط' : 'جاهز') : 'أضف مفتاح ' + keyName()}</span></div>`;
 }
 
 function header(title){
@@ -791,11 +871,12 @@ function renderAbout(){
 }
 function renderHelp(){
   const qa = [
+    ['كيف أحصل على مفتاح Gemini المجاني؟', '١) افتح aistudio.google.com/apikey وسجّل دخولك بحساب جوجل.\n٢) اضغط Create API key وانسخ المفتاح.\n٣) الصقه في الإعدادات هنا في خانة مفتاح Gemini.'],
     ['كيف أحصل على مفتاح Claude؟', '١) افتح console.anthropic.com وأنشئ حسابًا.\n٢) من Billing اشحن رصيدًا (5 دولارات تكفي مدة طويلة للاستخدام الشخصي).\n٣) من API Keys اضغط Create Key وانسخه.\n٤) الصقه في الإعدادات هنا.'],
     ['كيف أربط جيميل ودرايف؟', '١) افتح console.cloud.google.com وأنشئ مشروعًا جديدًا.\n٢) من APIs & Services فعّل Gmail API وGoogle Drive API.\n٣) من OAuth consent screen اختر External، وأضف بريدك في Test users.\n٤) من Credentials أنشئ OAuth client ID من نوع Web application، وفي Authorized JavaScript origins ضع رابط هذا التطبيق: ' + location.origin + '\n٥) انسخ Client ID والصقه في الإعدادات، ثم اضغط «ربط حساب جوجل» في الصلاحيات.'],
     ['كيف أرسل بريدًا؟', 'اكتب مثلًا: «أرسل لشريكي رسالة أشكره فيها». تظهر الرسالة في «بانتظار موافقتك»، أو تُرسل مباشرة إذا جعلت صلاحية جيميل «تلقائي».'],
     ['متى تعمل المهام المتكررة؟', 'حين تفتح التطبيق يخبرك بالمهام التي حان وقتها لتشغّلها بضغطة، ويمكنك تشغيل أي مهمة متى شئت.'],
-    ['كم تكلفة الاستخدام؟', 'تدفع لأنثروبيك حسب استخدامك فقط. «سريع» هو الأرخص، و«قوي» الأغلى. تابع رصيدك من console.anthropic.com.']
+    ['كم تكلفة الاستخدام؟', 'مع Gemini الاستخدام مجاني ضمن حد يومي من جوجل. ومع Claude تدفع لأنثروبيك حسب استخدامك فقط.']
   ];
   $('#screen').innerHTML = header('مساعدة ودعم') + `<div class="scroll">${qa.map(x => `<details class="card faq"><summary>${x[0]}</summary><p class="muted" style="margin-top:8px;color:var(--ink2);white-space:pre-line">${esc(x[1])}</p></details>`).join('')}</div>`;
 }
@@ -835,7 +916,7 @@ function renderStatus(){
 }
 function renderNotice(){
   const n = $('#notice'); if (!n) return;
-  if (S.ready && !apiKey()) n.innerHTML = `<div class="card" style="display:flex;flex-direction:column;gap:10px;background:var(--accSoft)"><b style="font-size:15px;color:var(--accInk)">خطوة أخيرة لتشغيل المساعد</b><p class="muted" style="color:var(--ink2)">أضف مفتاح Claude الخاص بك من الإعدادات، وبعدها يعمل كل شيء.</p><button class="btn pri" data-act="go" data-to="settings">إضافة المفتاح</button></div>`;
+  if (S.ready && !apiKey()) n.innerHTML = `<div class="card" style="display:flex;flex-direction:column;gap:10px;background:var(--accSoft)"><b style="font-size:15px;color:var(--accInk)">خطوة أخيرة لتشغيل المساعد</b><p class="muted" style="color:var(--ink2)">أضف مفتاح ${keyName()} الخاص بك من الإعدادات، وبعدها يعمل كل شيء.</p><button class="btn pri" data-act="go" data-to="settings">إضافة المفتاح</button></div>`;
   else if (!navigator.onLine) n.innerHTML = `<div class="warnbox">لا يوجد اتصال بالإنترنت.</div>`;
   else n.innerHTML = '';
 }
@@ -1048,10 +1129,16 @@ function renderSettings(){
   const st = S.state.settings, conf = S.ui.confirm;
   $('#screen').innerHTML = header('الإعدادات') + `
   <div class="scroll">
-    <div class="sec"><h2>مفتاح Claude</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <div class="sec"><h2>عقل المساعد</h2>${seg('provider', 'عقل المساعد', [['gemini','Gemini (مجاني)'],['claude','Claude']], provider())}</div>
+    ${provider() === 'gemini' ? `<div class="sec"><h2>مفتاح Gemini</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <div class="field"><label for="st_gkey">المفتاح الخاص بك</label><input class="inp" id="st_gkey" data-bind="settings.gemKey" type="password" dir="ltr" autocomplete="off" value="${esc(st.gemKey || '')}" placeholder="AIza..."></div>
+      <p class="muted">تحصل عليه مجانًا من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>. يُحفظ على هاتفك فقط.</p>
+      ${geminiKey() ? '<span class="okt">المفتاح محفوظ</span>' : '<span class="badt">لا يوجد مفتاح بعد</span>'}
+    </div></div>` : ''}
+    <div class="sec" style="${provider() === 'claude' ? '' : 'display:none'}"><h2>مفتاح Claude</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
       <div class="field"><label for="st_key">المفتاح الخاص بك</label><input class="inp" id="st_key" data-bind="settings.apiKey" type="password" dir="ltr" autocomplete="off" value="${esc(st.apiKey || '')}" placeholder="sk-ant-..."></div>
       <p class="muted">تحصل عليه من <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. يُحفظ على هاتفك فقط ولا يُرسل إلا إلى Claude.</p>
-      ${apiKey() ? '<span class="okt">المفتاح محفوظ</span>' : '<span class="badt">لا يوجد مفتاح بعد</span>'}
+      ${claudeKey() ? '<span class="okt">المفتاح محفوظ</span>' : '<span class="badt">لا يوجد مفتاح بعد</span>'}
     </div></div>
     <div class="sec"><h2>معرّف جوجل (لجيميل ودرايف)</h2><div class="card" style="display:flex;flex-direction:column;gap:10px">
       <div class="field"><label for="st_gid">Client ID</label><input class="inp" id="st_gid" data-bind="settings.gClientId" dir="ltr" autocomplete="off" value="${esc(st.gClientId || '')}" placeholder="xxxx.apps.googleusercontent.com"></div>
@@ -1059,7 +1146,7 @@ function renderSettings(){
     </div></div>
     <div class="sec"><h2>المظهر</h2>${seg('theme', 'المظهر', [['light','فاتح'],['dark','داكن'],['auto','تلقائي']], st.theme)}</div>
     <div class="sec"><h2>طول الردود</h2>${seg('length', 'طول الردود', [['short','قصيرة'],['long','مفصّلة']], st.length)}</div>
-    <div class="sec"><h2>قوة المساعد</h2>${seg('tier', 'قوة المساعد', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier)}<p class="muted" style="padding:0 4px">«سريع» أرخص، و«قوي» أفضل للتحليل والبرمجة لكنه أغلى.</p></div>
+    <div class="sec"><h2>قوة المساعد</h2>${seg('tier', 'قوة المساعد', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier)}<p class="muted" style="padding:0 4px">«سريع» أخف وأسرع، و«قوي» أفضل للتحليل والبرمجة.</p></div>
     <div class="sec"><h2>البيانات</h2>
       <div class="card"><p class="muted">كل بياناتك محفوظة على هذا الجهاز فقط.</p></div>
       <div class="list">
@@ -1129,7 +1216,7 @@ document.addEventListener('click', e => {
     case 'perm': S.state.perms[id] = +el.dataset.l; saveState(); renderPerms(); break;
     case 'test': testService(id); break;
     case 'gconnect': gConnect(true).then(() => { toast('تم ربط حساب جوجل'); if (S.screen === 'perms') renderPerms(); renderDrawer(); }).catch(err => toast(err.message)); break;
-    case 'set': S.state.settings[el.dataset.k] = el.dataset.v; saveState(); applyTheme(); renderSettings(); break;
+    case 'set': S.state.settings[el.dataset.k] = el.dataset.v; S.gemModelIdx = 0; saveState(); applyTheme(); renderSettings(); renderDrawer(); renderStatus(); break;
     case 'clearchat': if (S.ui.confirm === 'chat') { S.chat = []; saveChat(); S.ui.confirm = null; toast('مُسح سجل المحادثة'); } else S.ui.confirm = 'chat'; renderSettings(); break;
     case 'clearpend': S.pending = waiting(); savePending(); toast('مُسح السجل القديم'); break;
   }

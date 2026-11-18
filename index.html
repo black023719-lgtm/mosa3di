@@ -294,6 +294,10 @@ body{font-weight:400;letter-spacing:0}
 .scroll{gap:14px}
 .scroll>*{flex-shrink:0}
 .top h1{font-size:18px;font-weight:600}
+.keycard{background:var(--card);border:1.5px solid var(--accBg);border-radius:22px;padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(194,37,92,.15);text-align:center}
+.keycard b{font-size:17px;color:var(--accInk)}
+.kicon{width:52px;height:52px;border-radius:16px;background:var(--accSoft);color:var(--accBg);display:flex;align-items:center;justify-content:center}
+.kicon svg{width:26px;height:26px}
 </style>
 </head>
 <body>
@@ -953,7 +957,13 @@ function renderStatus(){
 }
 function renderNotice(){
   const n = $('#notice'); if (!n) return;
-  if (S.ready && !apiKey()) n.innerHTML = `<div class="card" style="display:flex;flex-direction:column;gap:10px;background:var(--accSoft)"><b style="font-size:15px;color:var(--accInk)">خطوة أخيرة لتشغيل المساعد</b><p class="muted" style="color:var(--ink2)">أضف مفتاح ${keyName()} الخاص بك من الإعدادات، وبعدها يعمل كل شيء.</p><button class="btn pri" data-act="go" data-to="settings">إضافة المفتاح</button></div>`;
+  if (S.ready && !apiKey()) n.innerHTML = `<div class="keycard">
+      <span class="kicon">${I2.key}</span>
+      <b>الصق مفتاح ${keyName()} هنا</b>
+      <div class="row" style="gap:8px;width:100%"><label for="qkey" class="sr">المفتاح</label><input id="qkey" class="inp" type="password" dir="ltr" autocomplete="off" placeholder="الصق المفتاح هنا"><button class="gbtn" data-act="pastekey">لصق</button></div>
+      <button class="btn pri wide" data-act="savekey">حفظ وتشغيل</button>
+      ${provider() === 'gemini' ? '<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="font-size:13px">ليس لديك مفتاح؟ احصل عليه مجانًا</a>' : ''}
+    </div>`;
   else if (!navigator.onLine) n.innerHTML = `<div class="warnbox">لا يوجد اتصال بالإنترنت.</div>`;
   else n.innerHTML = '';
 }
@@ -1028,7 +1038,7 @@ function renderMessages(){
   $('#screen').classList.toggle('empty', !S.chat.length);
 }
 function updateLast(){ const b = $('#lastbub'); const last = S.chat[S.chat.length - 1]; if (b && last) { b.innerHTML = md(last.text) || '<span class="dots"><i></i><i></i><i></i></span>'; scrollEnd(true); } }
-function scrollEnd(soft){ const s = $('#chatScroll'); if (!s) return; if (soft && s.scrollHeight - s.scrollTop - s.clientHeight > 160) return; s.scrollTop = s.scrollHeight; }
+function scrollEnd(soft){ const s = $('#chatScroll'); if (!s) return; if (!S.chat.length) { s.scrollTop = 0; return; } if (soft && s.scrollHeight - s.scrollTop - s.clientHeight > 160) return; s.scrollTop = s.scrollHeight; }
 function renderComposer(){
   const c = $('#cbox'); if (!c) return;
   const prev = $('#inp') ? $('#inp').value : '';
@@ -1276,6 +1286,8 @@ document.addEventListener('click', e => {
     case 'toggletask': { const t = S.state.tasks.find(x => x.id === id); t.on = !t.on; if (t.on && !t.lastRun) t.lastRun = Date.now(); saveState(); renderTasks(); renderDrawer(); break; }
     case 'runtask': runTask(id); break;
     case 'logout': if (S.ui.confirm === 'logout') logout(); else { S.ui.confirm = 'logout'; renderSettings(); } break;
+    case 'pastekey': { const q = $('#qkey'); if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { if (q) q.value = String(t || '').trim(); }).catch(() => toast('اضغط مطولًا على الخانة واختر «لصق»')); else toast('اضغط مطولًا على الخانة واختر «لصق»'); break; }
+    case 'savekey': { const q = $('#qkey'); const v = q ? q.value.trim() : ''; if (!v) { toast('الصق المفتاح أولًا'); break; } if (provider() === 'gemini') S.state.settings.gemKey = v; else S.state.settings.apiKey = v; saveState(); renderNotice(); renderStatus(); renderDrawer(); toast('تم حفظ المفتاح، المساعد جاهز'); break; }
     case 'opentask': S.ui.openTask = S.ui.openTask === id ? null : id; renderTasks(); break;
     case 'deltask': if (S.ui.confirm === id) { S.state.tasks = S.state.tasks.filter(x => x.id !== id); S.ui.confirm = null; saveState(); toast('حُذفت المهمة'); } else S.ui.confirm = id; renderTasks(); renderDrawer(); break;
     case 'perm': S.state.perms[id] = +el.dataset.l; saveState(); renderPerms(); break;

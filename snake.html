@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ثعبان الصحراء</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap">
+<style>
+  /* Layout: one centered column — score strip, square board, touch pad. Single deliberate look: desert night. */
+  :root {
+    --night: #141a2e;      /* sky / page */
+    --dune: #1d2540;       /* board */
+    --dune-line: #26304f;  /* board grid */
+    --sand: #e9c27a;       /* snake + headings */
+    --sand-deep: #b88a3e;  /* snake tail */
+    --date: #c4512f;       /* food: a date */
+    --ink: #ece6d6;        /* text */
+    --muted: #8f97b3;
+    --display: "Lalezar", "IBM Plex Sans Arabic", system-ui, sans-serif;
+    --body: "IBM Plex Sans Arabic", system-ui, "Segoe UI", Tahoma, sans-serif;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 70% at 50% 0%, #22294a 0%, var(--night) 60%) fixed, var(--night);
+    color: var(--ink);
+    font-family: var(--body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 16px;
+    box-sizing: border-box;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap {
+    max-width: 480px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(2rem, 8vw, 2.8rem); line-height: 1; margin: 0;
+    color: var(--sand); letter-spacing: 0;
+  }
+  .scores { display: flex; gap: 18px; }
+  .stat { display: flex; flex-direction: column; align-items: flex-start; }
+  .stat span { font-size: .75rem; color: var(--muted); }
+  .stat b { font-family: var(--display); font-weight: 400; font-size: 1.7rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat.best b { color: var(--sand); }
+
+  .board {
+    position: relative; width: 100%; max-width: 100%; aspect-ratio: 1;
+    border-radius: 14px; overflow: hidden;
+    background: var(--dune);
+    box-shadow: 0 0 0 2px var(--dune-line), 0 20px 50px -20px #000;
+  }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    text-align: center; padding: 24px;
+    background: color-mix(in srgb, var(--night) 72%, transparent);
+    backdrop-filter: blur(3px);
+  }
+  .overlay h2 { font-family: var(--display); font-weight: 400; font-size: 2.2rem; margin: 0; color: var(--sand); text-wrap: balance; }
+  .overlay p { margin: 0; color: var(--ink); max-width: 30ch; line-height: 1.7; }
+  .overlay small { color: var(--muted); }
+
+  button {
+    font: inherit; cursor: pointer; border: 0;
+  }
+  .primary {
+    font-family: var(--display); font-size: 1.35rem;
+    background: var(--sand); color: var(--night);
+    padding: 8px 30px 4px; border-radius: 999px;
+    box-shadow: 0 4px 0 var(--sand-deep);
+    transition: transform .08s;
+  }
+  .primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sand-deep); }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .hint { font-size: .85rem; color: var(--muted); }
+  .ghost {
+    background: transparent; color: var(--ink);
+    border: 1.5px solid var(--dune-line); border-radius: 10px; padding: 6px 14px;
+  }
+  .ghost:hover { border-color: var(--muted); }
+
+  .pad {
+    display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px);
+    gap: 8px; justify-content: center;
+  }
+  .pad button {
+    background: var(--dune); color: var(--sand); border-radius: 12px;
+    font-size: 1.4rem; box-shadow: 0 0 0 1.5px var(--dune-line);
+  }
+  .pad button:active { background: var(--dune-line); }
+  .pad .up { grid-column: 2; grid-row: 1; }
+  .pad .left { grid-column: 3; grid-row: 2; }   /* RTL grid: column 1 is on the right */
+  .pad .down { grid-column: 2; grid-row: 2; }
+  .pad .right { grid-column: 1; grid-row: 2; }
+  @media (hover: hover) and (pointer: fine) { .pad { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .primary { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <header>
+    <h1>ثعبان الصحراء</h1>
+    <div class="scores">
+      <div class="stat"><span>النقاط</span><b id="score">٠</b></div>
+      <div class="stat best"><span>أعلى نتيجة</span><b id="best">٠</b></div>
+    </div>
+  </header>
+
+  <div class="board">
+    <canvas id="game" aria-label="ساحة لعبة الثعبان"></canvas>
+    <div class="overlay" id="overlay">
+      <h2 id="ov-title">جاهز؟</h2>
+      <p id="ov-text">كُل التمر لتكبر، وتجنّب الجدران وذيلك. كل خمس تمرات تزيد السرعة.</p>
+      <button class="primary" id="start">ابدأ</button>
+      <small id="ov-hint">الأسهم أو WASD للتحكم · المسافة للإيقاف</small>
+    </div>
+  </div>
+
+  <div class="bar">
+    <span class="hint" id="level">السرعة: ١</span>
+    <button class="ghost" id="pause">إيقاف مؤقت</button>
+  </div>
+
+  <div class="pad" aria-label="أزرار التحكم">
+    <button class="up" data-dir="up" aria-label="أعلى">▲</button>
+    <button class="right" data-dir="right" aria-label="يمين">▶</button>
+    <button class="down" data-dir="down" aria-label="أسفل">▼</button>
+    <button class="left" data-dir="left" aria-label="يسار">◀</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const N = 20;                       // board is N x N cells
+  const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  const ar = n => n.toLocaleString('ar-EG');
+
+  const cvs = document.getElementById('game');
+  const ctx = cvs.getContext('2d');
+  const $ = id => document.getElementById(id);
+  const css = getComputedStyle(document.documentElement);
+  const C = k => css.getPropertyValue(k).trim();
+  const col = { dune: C('--dune'), line: C('--dune-line'), sand: C('--sand'), deep: C('--sand-deep'), date: C('--date'), night: C('--night') };
+
+  let best = 0;
+  try { best = parseInt(localStorage.getItem('snake-best') || '0', 10) || 0; } catch (e) {}
+  $('best').textContent = ar(best);
+
+  let snake, dir, queue, food, score, eaten, speed, state = 'ready', timer = null, cell = 0;
+
+  function resize() {
+    const r = cvs.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = Math.round(r.width * dpr);
+    cvs.height = Math.round(r.height * dpr);
+    cell = cvs.width / N;
+    draw();
+  }
+
+  function reset() {
+    const m = Math.floor(N / 2);
+    snake = [[m, m], [m + 1, m], [m + 2, m]];  // heading left
+    dir = 'left'; queue = [];
+    score = 0; eaten = 0; speed = 1;
+    placeFood();
+    updateHud();
+  }
+
+  function placeFood() {
+    const taken = new Set(snake.map(([x, y]) => x + ',' + y));
+    const free = [];
+    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) if (!taken.has(x + ',' + y)) free.push([x, y]);
+    food = free[Math.floor(Math.random() * free.length)];
+  }
+
+  function interval() { return Math.max(55, 150 - (speed - 1) * 12); }
+
+  function updateHud() {
+    $('score').textContent = ar(score);
+    $('level').textContent = 'السرعة: ' + ar(speed);
+  }
+
+  function turn(d) {
+    if (state === 'ready' || state === 'over') return;
+    const last = queue.length ? queue[queue.length - 1] : dir;
+    if (d === last || d === OPP[last] || queue.length >= 3) return;
+    queue.push(d);
+  }
+
+  function step() {
+    if (queue.length) dir = queue.shift();
+    const [dx, dy] = DIRS[dir];
+    const [hx, hy] = snake[0];
+    const nx = hx + dx, ny = hy + dy;
+    const grows = food && nx === food[0] && ny === food[1];
+    const body = grows ? snake : snake.slice(0, -1);  // tail moves away unless growing
+    if (nx < 0 || ny < 0 || nx >= N || ny >= N || body.some(([x, y]) => x === nx && y === ny)) {
+      return gameOver();
+    }
+    snake.unshift([nx, ny]);
+    if (grows) {
+      eaten++; score += speed;
+      if (eaten % 5 === 0) { speed++; restartTimer(); }
+      if (snake.length === N * N) { updateHud(); return gameOver(true); }
+      placeFood();
+      updateHud();
+    } else {
+      snake.pop();
+    }
+    draw();
+  }
+
+  function restartTimer() { clearInterval(timer); timer = setInterval(step, interval()); }
+
+  function start() {
+    reset();
+    state = 'play';
+    $('overlay').hidden = true;
+    $('pause').textContent = 'إيقاف مؤقت';
+    restartTimer();
+    draw();
+  }
+
+  function togglePause() {
+    if (state === 'play') {
+      state = 'paused'; clearInterval(timer);
+      showOverlay('متوقفة', 'خذ نفساً. اضغط متابعة أو المسافة للرجوع.', 'متابعة');
+      $('pause').textContent = 'متابعة';
+    } else if (state === 'paused') {
+      state = 'play'; $('overlay').hidden = true; $('pause').textContent = 'إيقاف مؤقت';
+      restartTimer();
+    }
+  }
+
+  function gameOver(won) {
+    clearInterval(timer); state = 'over';
+    let msg = 'نتيجتك ' + ar(score) + ' نقطة وطول الثعبان ' + ar(snake.length) + '.';
+    if (score > best) {
+      best = score; $('best').textContent = ar(best);
+      try { localStorage.setItem('snake-best', String(best)); } catch (e) {}
+      msg += ' رقم قياسي جديد!';
+    }
+    draw();
+    showOverlay(won ? 'ملأت الصحراء!' : 'انتهت اللعبة', msg, 'العب مجدداً');
+  }
+
+  function showOverlay(title, text, btn) {
+    $('ov-title').textContent = title;
+    $('ov-text').textContent = text;
+    $('start').textContent = btn;
+    $('overlay').hidden = false;
+    $('start').focus({ preventScroll: true });
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  function draw() {
+    if (!cell || !snake) return;
+    const W = cvs.width;
+    ctx.fillStyle = col.dune; ctx.fillRect(0, 0, W, W);
+    // checker of sand ripples
+    ctx.fillStyle = col.line;
+    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) if ((x + y) % 2) ctx.fillRect(x * cell, y * cell, cell, cell);
+
+    // food: a date with a little stem
+    if (food) {
+      const fx = (food[0] + .5) * cell, fy = (food[1] + .55) * cell;
+      ctx.fillStyle = col.date;
+      ctx.beginPath(); ctx.ellipse(fx, fy, cell * .3, cell * .38, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.25)';
+      ctx.beginPath(); ctx.ellipse(fx - cell * .1, fy - cell * .12, cell * .07, cell * .13, -.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = col.deep;
+      ctx.fillRect(fx - cell * .04, fy - cell * .48, cell * .08, cell * .14);
+    }
+
+    // snake: gradient from sand head to deep tail
+    const len = snake.length, pad = cell * .08;
+    for (let i = len - 1; i >= 0; i--) {
+      const [x, y] = snake[i];
+      const t = len > 1 ? i / (len - 1) : 0;
+      ctx.fillStyle = mix(col.sand, col.deep, t);
+      roundRect(x * cell + pad, y * cell + pad, cell - pad * 2, cell - pad * 2, cell * .3);
+      ctx.fill();
+    }
+    // eyes
+    const [hx, hy] = snake[0], [dx, dy] = DIRS[dir];
+    const cx = (hx + .5) * cell, cy = (hy + .5) * cell;
+    const px = -dy, py = dx; // perpendicular
+    ctx.fillStyle = col.night;
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(cx + dx * cell * .15 + px * s * cell * .18, cy + dy * cell * .15 + py * s * cell * .18, cell * .07, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function mix(a, b, t) {
+    const pa = hex(a), pb = hex(b);
+    return 'rgb(' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t)).join(',') + ')';
+  }
+  function hex(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+
+  // keyboard
+  const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right' };
+  document.addEventListener('keydown', e => {
+    if (KEYS[e.key]) { e.preventDefault(); turn(KEYS[e.key]); return; }
+    if (e.key === ' ' || e.key === 'Enter') {
+      if (e.target.tagName === 'BUTTON' && e.key === 'Enter') return;
+      e.preventDefault();
+      if (state === 'ready' || state === 'over') start(); else togglePause();
+    }
+  });
+
+  // swipe on the board
+  let sx = 0, sy = 0;
+  cvs.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
+  cvs.addEventListener('pointerup', e => {
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+    turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+  });
+
+  document.querySelectorAll('.pad button').forEach(b =>
+    b.addEventListener('pointerdown', e => { e.preventDefault(); turn(b.dataset.dir); }));
+
+  $('start').addEventListener('click', () => (state === 'paused' ? togglePause() : start()));
+  $('pause').addEventListener('click', () => { if (state === 'play' || state === 'paused') togglePause(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') togglePause(); });
+
+  reset();
+  new ResizeObserver(resize).observe(cvs);
+  resize();
+})();
+</script>
+</body>
+</html>

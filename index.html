@@ -1191,7 +1191,7 @@ function renderSettings(){
     <div class="group">
       <div class="grow">${gi(I2.spark)}<span class="gt"><b>النموذج</b></span>${sel('data-set="provider"', [['gemini','Gemini'],['claude','Claude']], provider(), 'عقل المساعد')}</div>
       <div class="grow">${gi(I2.key)}<span class="gt"><b>مفتاح ${gem ? 'Gemini' : 'Claude'}</b><span class="${has ? 'okt' : 'badt'}">${has ? 'محفوظ' : 'غير موجود'}</span></span></div>
-      <div class="grow"><input class="ginp" data-bind="settings.${gem ? 'gemKey' : 'apiKey'}" type="password" dir="ltr" autocomplete="off" value="${esc(gem ? (st.gemKey || '') : (st.apiKey || ''))}" aria-label="المفتاح"></div>
+      <div class="grow"><input class="ginp" data-bind="settings.${gem ? 'gemKey' : 'apiKey'}" type="password" dir="ltr" autocomplete="off" value="${esc(gem ? (st.gemKey || '') : (st.apiKey || ''))}" placeholder="الصق المفتاح هنا" aria-label="المفتاح" style="background:var(--bg);border-radius:10px;padding:10px 12px"></div>
       <div class="grow">${gi(I2.gauge)}<span class="gt"><b>قوة المساعد</b></span>${sel('data-set="tier"', [['quick','سريع'],['default','متوازن'],['complex','قوي']], st.tier, 'قوة المساعد')}</div>
     </div>
     <div class="glabel">المظهر والردود</div>

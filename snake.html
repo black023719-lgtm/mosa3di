@@ -9,33 +9,32 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap">
 <style>
-  /* Layout: one centered column — title + scores, mode chips, square board, status bar, touch pad. Single deliberate look: desert night. */
+  /* Layout: one centered column — title + scores, snake picker strip, mode chips, square board, status bar, touch pad. Single deliberate look: desert night. */
   :root {
-    --night: #141a2e;      /* sky / page */
-    --dune: #1d2540;       /* board */
-    --dune-line: #26304f;  /* board grid */
-    --sand: #e9c27a;       /* snake + headings */
-    --sand-deep: #b88a3e;  /* snake tail */
-    --date: #c4512f;       /* food: a date */
-    --gold: #ffd75e;       /* golden date bonus */
-    --rock: #5a6385;       /* obstacles */
-    --ink: #ece6d6;        /* text */
+    --night: #141a2e;
+    --dune: #1d2540;
+    --dune-line: #232c4a;
+    --card: #1a2139;
+    --sand: #e9c27a;
+    --sand-deep: #b88a3e;
+    --date: #c4512f;
+    --gold: #ffd75e;
+    --rock: #5a6385;
+    --ink: #ece6d6;
     --muted: #8f97b3;
     --display: "Lalezar", "IBM Plex Sans Arabic", system-ui, sans-serif;
     --body: "IBM Plex Sans Arabic", system-ui, "Segoe UI", Tahoma, sans-serif;
     color-scheme: dark;
   }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     background: radial-gradient(120% 70% at 50% 0%, #22294a 0%, var(--night) 60%) fixed, var(--night);
-    color: var(--ink);
-    font-family: var(--body);
+    color: var(--ink); font-family: var(--body);
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 16px;
-    box-sizing: border-box;
-    -webkit-user-select: none; user-select: none;
-    -webkit-tap-highlight-color: transparent;
+    padding-block: 16px; box-sizing: border-box;
+    -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
   }
   .wrap { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
   header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -49,12 +48,31 @@
   .stat b.bump { animation: bump .25s ease-out; }
   @keyframes bump { 50% { transform: scale(1.25); color: var(--gold); } }
 
-  .modes { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip {
-    background: transparent; color: var(--muted);
-    border: 1.5px solid var(--dune-line); border-radius: 999px; padding: 4px 14px;
-    font-size: .9rem;
+  .section-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .section-label h3 { margin: 0; font-size: .8rem; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+  .section-label output { font-family: var(--display); font-size: 1.15rem; color: var(--sand); }
+
+  .skins {
+    display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px;
+    scroll-snap-type: x proximity; scrollbar-width: thin;
   }
+  .skins.locked { opacity: .5; pointer-events: none; }
+  .skin {
+    flex: 0 0 116px; scroll-snap-align: start;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: var(--card); color: var(--ink);
+    border-radius: 14px; padding: 6px 6px 8px;
+    box-shadow: inset 0 0 0 1.5px var(--dune-line);
+    transition: box-shadow .15s, transform .15s;
+  }
+  .skin:hover { transform: translateY(-2px); }
+  .skin[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--sand), 0 8px 22px -10px var(--sand); }
+  .skin canvas { width: 104px; height: 64px; display: block; }
+  .skin b { font-weight: 600; font-size: .85rem; }
+  .skin small { font-size: .7rem; color: var(--muted); }
+
+  .modes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { background: transparent; color: var(--muted); border: 1.5px solid var(--dune-line); border-radius: 999px; padding: 4px 14px; font-size: .9rem; }
   .chip[aria-pressed="true"] { background: var(--sand); color: var(--night); border-color: var(--sand); font-weight: 600; }
   .chip:disabled { opacity: .45; cursor: not-allowed; }
 
@@ -66,14 +84,13 @@
   .board.wrapmode { box-shadow: 0 0 0 2px var(--dune-line), 0 0 0 5px color-mix(in srgb, var(--sand) 25%, transparent), 0 20px 50px -20px #000; }
   .board.shake { animation: shake .35s; }
   @keyframes shake { 20% { transform: translate(-6px, 2px); } 40% { transform: translate(5px, -3px); } 60% { transform: translate(-3px, 3px); } 80% { transform: translate(2px, -1px); } }
-  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  #game { display: block; width: 100%; height: 100%; touch-action: none; }
 
   .overlay {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
     text-align: center; padding: 24px;
-    background: color-mix(in srgb, var(--night) 72%, transparent);
-    backdrop-filter: blur(3px);
+    background: color-mix(in srgb, var(--night) 70%, transparent); backdrop-filter: blur(3px);
   }
   .overlay h2 { font-family: var(--display); font-weight: 400; font-size: 2.2rem; margin: 0; color: var(--sand); text-wrap: balance; }
   .overlay p { margin: 0; color: var(--ink); max-width: 32ch; line-height: 1.7; }
@@ -81,10 +98,8 @@
 
   button { font: inherit; cursor: pointer; border: 0; }
   .primary {
-    font-family: var(--display); font-size: 1.35rem;
-    background: var(--sand); color: var(--night);
-    padding: 8px 30px 4px; border-radius: 999px;
-    box-shadow: 0 4px 0 var(--sand-deep); transition: transform .08s;
+    font-family: var(--display); font-size: 1.35rem; background: var(--sand); color: var(--night);
+    padding: 8px 30px 4px; border-radius: 999px; box-shadow: 0 4px 0 var(--sand-deep); transition: transform .08s;
   }
   .primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sand-deep); }
   button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
@@ -92,6 +107,7 @@
   .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .hint { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
   .hint b { color: var(--ink); font-weight: 600; }
+  .hint b.combo { color: var(--gold); }
   .actions { display: flex; gap: 8px; }
   .ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--dune-line); border-radius: 10px; padding: 6px 14px; }
   .ghost:hover { border-color: var(--muted); }
@@ -100,23 +116,28 @@
   .pad button { background: var(--dune); color: var(--sand); border-radius: 12px; font-size: 1.4rem; box-shadow: 0 0 0 1.5px var(--dune-line); }
   .pad button:active { background: var(--dune-line); }
   .pad .up { grid-column: 2; grid-row: 1; }
-  .pad .left { grid-column: 3; grid-row: 2; }   /* RTL grid: column 1 is on the right */
+  .pad .left { grid-column: 3; grid-row: 2; }
   .pad .down { grid-column: 2; grid-row: 2; }
   .pad .right { grid-column: 1; grid-row: 2; }
   @media (hover: hover) and (pointer: fine) { .pad { display: none; } }
-  @media (prefers-reduced-motion: reduce) { .primary { transition: none; } .board.shake, .stat b.bump { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .primary, .skin { transition: none; } .board.shake, .stat b.bump { animation: none; } }
 </style>
 </head>
 <body>
 
 <div class="wrap" dir="rtl" lang="ar">
   <header>
-    <h1>ثعبان الصحراء<sup>الإصدار ٢</sup></h1>
+    <h1>ثعبان الصحراء<sup>الإصدار ٣</sup></h1>
     <div class="scores">
       <div class="stat"><span>النقاط</span><b id="score">٠</b></div>
       <div class="stat best"><span>أعلى نتيجة</span><b id="best">٠</b></div>
     </div>
   </header>
+
+  <section>
+    <div class="section-label"><h3>اختر ثعبانك</h3><output id="skin-name"></output></div>
+    <div class="skins" id="skins" role="group" aria-label="اختيار الثعبان"></div>
+  </section>
 
   <div class="modes" role="group" aria-label="نمط اللعب">
     <button class="chip" data-mode="classic" aria-pressed="true">كلاسيكي</button>
@@ -128,14 +149,14 @@
     <canvas id="game" aria-label="ساحة لعبة الثعبان"></canvas>
     <div class="overlay" id="overlay">
       <h2 id="ov-title">جاهز؟</h2>
-      <p id="ov-text">كُل التمر لتكبر. التمرة الذهبية تختفي بسرعة وتعطيك نقاطاً أكثر. كل خمس تمرات تزيد السرعة.</p>
+      <p id="ov-text">اختر ثعبانك ونمط اللعب. كُل التمر بسرعة متتالية لتضاعف النقاط، والتمرة الذهبية تختفي خلال خمس ثوانٍ.</p>
       <button class="primary" id="start">ابدأ</button>
-      <small id="ov-hint">الأسهم أو WASD للتحكم · المسافة للإيقاف · M للصوت</small>
+      <small>الأسهم أو WASD للتحكم · المسافة للإيقاف · M للصوت</small>
     </div>
   </div>
 
   <div class="bar">
-    <span class="hint" id="level">السرعة <b>١</b> · الطول <b>٣</b></span>
+    <span class="hint" id="level"></span>
     <div class="actions">
       <button class="ghost" id="sound" aria-pressed="true">الصوت: يعمل</button>
       <button class="ghost" id="pause">إيقاف مؤقت</button>
@@ -152,69 +173,298 @@
 
 <script>
 (() => {
-  const N = 20;
+  const N = 16;
   const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
   const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
   const MODE_NAMES = { classic: 'كلاسيكي', wrap: 'بلا جدران', rocks: 'صخور' };
   const ar = n => n.toLocaleString('ar-EG');
   const key = (x, y) => x + ',' + y;
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   const $ = id => document.getElementById(id);
+
+  // ================= SKINS =================
+  // head: hood | viper | round | sleek | broad | crown
+  // pattern: diamond | chevron | bands | glow | spots | frost
+  const SKINS = [
+    { id: 'cobra',    name: 'كوبرا الرمال', tag: 'رأس بقلنسوة', head: 'hood',  eye: 'slit',  iris: '#ffcf3f',
+      base: '#ecc683', base2: '#b8873a', edge: '#6e4a1a', pattern: 'diamond', mark: '#7a4f1c', hood: '#d9a556' },
+    { id: 'viper',    name: 'أفعى الزمرد', tag: 'رأس مثلث',    head: 'viper', eye: 'slit',  iris: '#f2d24b',
+      base: '#46c486', base2: '#1b7450', edge: '#0d4430', pattern: 'chevron', mark: '#c9f7d4' },
+    { id: 'coral',    name: 'ثعبان المرجان', tag: 'حلقات ملوّنة', head: 'round', eye: 'round',
+      base: '#e2483a', base2: '#e2483a', edge: '#160f0f', pattern: 'bands', bands: ['#e2483a', '#1b1716', '#f4d35e', '#1b1716'] },
+    { id: 'night',    name: 'شبح الليل',   tag: 'يتوهّج',       head: 'sleek', eye: 'glow',  glow: '#b892ff',
+      base: '#3a2a68', base2: '#1b1438', edge: '#0b0820', pattern: 'glow' },
+    { id: 'anaconda', name: 'أناكوندا',     tag: 'رأس عريض',    head: 'broad', eye: 'round',
+      base: '#99a854', base2: '#5f6d2c', edge: '#2e3a14', pattern: 'spots', mark: '#2a3110' },
+    { id: 'ice',      name: 'ثعبان الجليد', tag: 'رأس بتاج',     head: 'crown', eye: 'glow',  glow: '#7fd6ff',
+      base: '#f4f9ff', base2: '#86bde9', edge: '#4a7ba5', pattern: 'frost', mark: '#ffffff' },
+  ];
+
+  const hexRgb = h => [0, 2, 4].map(i => parseInt(h.replace('#', '').slice(i, i + 2), 16));
+  const mix = (a, b, t) => { const A = hexRgb(a), B = hexRgb(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')'; };
+
+  // Catmull-Rom sampling of the body centre-line. pts are in cell units, head first.
+  function sampleBody(pts, S) {
+    const out = [], n = pts.length;
+    const gap = (a, b) => Math.abs(a[0] - b[0]) > 1.5 || Math.abs(a[1] - b[1]) > 1.5;
+    for (let i = 0; i < n; i++) {
+      if (i === n - 1 || gap(pts[i], pts[i + 1])) { out.push({ x: pts[i][0], y: pts[i][1], s: i, end: true }); continue; }
+      const P1 = pts[i], P2 = pts[i + 1];
+      const P0 = i > 0 && !gap(pts[i - 1], P1) ? pts[i - 1] : [2 * P1[0] - P2[0], 2 * P1[1] - P2[1]];
+      const P3 = i + 2 < n && !gap(P2, pts[i + 2]) ? pts[i + 2] : [2 * P2[0] - P1[0], 2 * P2[1] - P1[1]];
+      for (let k = 0; k < S; k++) {
+        const t = k / S, t2 = t * t, t3 = t2 * t;
+        const f = j => .5 * (2 * P1[j] + (-P0[j] + P2[j]) * t + (2 * P0[j] - 5 * P1[j] + 4 * P2[j] - P3[j]) * t2 + (-P0[j] + 3 * P1[j] - 3 * P2[j] + P3[j]) * t3);
+        out.push({ x: f(0), y: f(1), s: i + t });
+      }
+    }
+    // tangents (pointing toward the head)
+    for (let i = 0; i < out.length; i++) {
+      const a = out[Math.max(0, i - 1)], b = out[Math.min(out.length - 1, i + 1)];
+      let ang = Math.atan2(a.y - b.y, a.x - b.x);
+      if (a === b || (Math.abs(a.x - b.x) > 1.5 || Math.abs(a.y - b.y) > 1.5)) ang = i ? out[i - 1].ang : 0;
+      out[i].ang = ang;
+    }
+    return out;
+  }
+
+  function bodyColor(skin, s, len) {
+    if (skin.pattern === 'bands') {
+      const b = skin.bands, p = (s * 1.25) % b.length;
+      return b[Math.floor(p)];
+    }
+    return mix(skin.base, skin.base2, len > 1 ? Math.min(1, s / (len - 1)) : 0);
+  }
+
+  // Draws a whole snake. pts in cell units (centres), c = cell size in px.
+  function drawSnake(g, pts, c, skin, now, opts = {}) {
+    const len = pts.length;
+    const samples = sampleBody(pts, Math.max(4, Math.min(10, Math.round(c / 5))));
+    const R = c * .46;
+    const rad = s => {
+      const u = len > 1 ? s / (len - 1) : 0;
+      return R * (1 - .62 * Math.pow(u, 1.4)) * (s < .6 ? .82 + .3 * s : 1); // neck slimmer than head
+    };
+    const at = p => [p.x * c, p.y * c];
+
+    // 1. soft shadow
+    g.fillStyle = 'rgba(0,0,0,.28)';
+    for (let i = samples.length - 1; i >= 0; i--) { const p = samples[i], [x, y] = at(p); circle(g, x + c * .07, y + c * .11, rad(p.s)); }
+    // 2. outline
+    g.fillStyle = skin.edge;
+    for (let i = samples.length - 1; i >= 0; i--) { const p = samples[i], [x, y] = at(p); circle(g, x, y, rad(p.s)); }
+    // 3. body
+    if (skin.pattern === 'glow') { g.shadowColor = skin.glow; g.shadowBlur = c * .5; }
+    for (let i = samples.length - 1; i >= 0; i--) { const p = samples[i], [x, y] = at(p); g.fillStyle = bodyColor(skin, p.s, len); circle(g, x, y, rad(p.s) * .84); }
+    g.shadowBlur = 0;
+    // 4. pattern
+    drawPattern(g, samples, c, skin, rad, now, len);
+    // 5. sheen (constant light from the top-left gives a rounded, glossy tube)
+    g.fillStyle = 'rgba(255,255,255,.16)';
+    for (let i = samples.length - 1; i >= 0; i--) { const p = samples[i], [x, y] = at(p), r = rad(p.s); circle(g, x - r * .22, y - r * .26, r * .42); }
+    // 6. head
+    const h = samples[0];
+    drawHead(g, h.x * c, h.y * c, h.ang, R, skin, now, opts);
+  }
+
+  function circle(g, x, y, r) { g.beginPath(); g.arc(x, y, Math.max(.5, r), 0, Math.PI * 2); g.fill(); }
+
+  function drawPattern(g, samples, c, skin, rad, now, len) {
+    const every = (step, fn) => {
+      let next = step * .9;
+      for (const p of samples) if (p.s >= next) { fn(p, Math.round(p.s / step)); next += step; }
+    };
+    const loc = (p, f) => { g.save(); g.translate(p.x * c, p.y * c); g.rotate(p.ang); f(rad(p.s)); g.restore(); };
+    if (skin.pattern === 'diamond') {
+      every(.55, p => loc(p, r => {
+        g.fillStyle = skin.mark;
+        g.beginPath(); g.moveTo(r * .62, 0); g.lineTo(0, -r * .5); g.lineTo(-r * .62, 0); g.lineTo(0, r * .5); g.closePath(); g.fill();
+        g.fillStyle = skin.base;
+        g.beginPath(); g.moveTo(r * .26, 0); g.lineTo(0, -r * .2); g.lineTo(-r * .26, 0); g.lineTo(0, r * .2); g.closePath(); g.fill();
+      }));
+    } else if (skin.pattern === 'chevron') {
+      g.strokeStyle = skin.mark; g.lineCap = 'round'; g.globalAlpha = .55;
+      every(.34, p => loc(p, r => {
+        g.lineWidth = Math.max(1, r * .14);
+        g.beginPath(); g.moveTo(-r * .25, -r * .5); g.lineTo(r * .1, 0); g.lineTo(-r * .25, r * .5); g.stroke();
+      }));
+      g.globalAlpha = 1;
+    } else if (skin.pattern === 'spots') {
+      every(.5, (p, i) => loc(p, r => {
+        g.fillStyle = skin.mark;
+        g.beginPath(); g.ellipse(0, (i % 2 ? 1 : -1) * r * .36, r * .3, r * .24, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = 'rgba(255,220,120,.25)';
+        g.beginPath(); g.ellipse(0, (i % 2 ? 1 : -1) * r * .36, r * .12, r * .1, 0, 0, Math.PI * 2); g.fill();
+      }));
+    } else if (skin.pattern === 'glow') {
+      g.fillStyle = skin.glow; g.shadowColor = skin.glow; g.shadowBlur = c * .3;
+      const pulse = reduceMotion ? 0 : now / 300;
+      for (const p of samples) { g.globalAlpha = .55 + .45 * Math.sin(p.s * 1.6 - pulse); circle(g, p.x * c, p.y * c, rad(p.s) * .16); }
+      g.globalAlpha = 1; g.shadowBlur = 0;
+    } else if (skin.pattern === 'frost') {
+      g.strokeStyle = skin.base2; g.globalAlpha = .6;
+      every(.5, p => loc(p, r => {
+        g.lineWidth = Math.max(1, r * .1);
+        g.beginPath(); g.moveTo(-r * .3, -r * .55); g.lineTo(r * .3, 0); g.lineTo(-r * .3, r * .55); g.stroke();
+      }));
+      g.globalAlpha = 1;
+      const tw = reduceMotion ? 0 : now / 250;
+      every(.9, (p, i) => {
+        const a = .4 + .6 * Math.abs(Math.sin(tw + i * 1.7));
+        g.fillStyle = 'rgba(255,255,255,' + a.toFixed(2) + ')';
+        loc(p, r => star(g, r * .25 * (i % 2 ? 1 : -1), r * .1, r * .22));
+      });
+    }
+  }
+  function star(g, x, y, r) {
+    g.beginPath();
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * .35 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    g.closePath(); g.fill();
+  }
+
+  function drawHead(g, x, y, ang, R, skin, now, opts) {
+    g.save(); g.translate(x, y); g.rotate(ang);
+    const fill = skin.pattern === 'bands' ? '#1b1716' : skin.base;
+    const shape = () => {
+      g.beginPath();
+      switch (skin.head) {
+        case 'viper':
+          g.moveTo(-R * .55, -R * .78);
+          g.quadraticCurveTo(R * .35, -R * 1.05, R * 1.1, -R * .3);
+          g.quadraticCurveTo(R * 1.32, 0, R * 1.1, R * .3);
+          g.quadraticCurveTo(R * .35, R * 1.05, -R * .55, R * .78);
+          g.quadraticCurveTo(-R * .8, 0, -R * .55, -R * .78); break;
+        case 'sleek': g.ellipse(R * .3, 0, R * 1.2, R * .7, 0, 0, Math.PI * 2); break;
+        case 'broad':
+          g.moveTo(-R * .5, -R * .95);
+          g.quadraticCurveTo(R * .9, -R * 1.15, R * 1.05, -R * .35);
+          g.lineTo(R * 1.05, R * .35);
+          g.quadraticCurveTo(R * .9, R * 1.15, -R * .5, R * .95);
+          g.quadraticCurveTo(-R * .9, 0, -R * .5, -R * .95); break;
+        case 'hood': g.ellipse(R * .3, 0, R * .9, R * .72, 0, 0, Math.PI * 2); break;
+        default: g.ellipse(R * .15, 0, R * 1.02, R * .88, 0, 0, Math.PI * 2);
+      }
+    };
+    // cobra hood flares out behind the head
+    if (skin.head === 'hood') {
+      g.fillStyle = skin.edge;
+      g.beginPath(); g.ellipse(-R * .45, 0, R * .78, R * 1.5, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = skin.hood;
+      g.beginPath(); g.ellipse(-R * .45, 0, R * .66, R * 1.36, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = skin.mark;
+      for (const s of [-1, 1]) { g.beginPath(); g.ellipse(-R * .55, s * R * .72, R * .2, R * .26, 0, 0, Math.PI * 2); g.fill(); }
+    }
+    // crown spikes behind the head
+    if (skin.head === 'crown') {
+      g.fillStyle = skin.glow;
+      if (!reduceMotion) { g.shadowColor = skin.glow; g.shadowBlur = R * .8; }
+      for (const s of [-1, 0, 1]) {
+        g.beginPath(); g.moveTo(-R * .4, s * R * .5 - R * .2); g.lineTo(-R * 1.25, s * R * .75); g.lineTo(-R * .4, s * R * .5 + R * .2); g.fill();
+      }
+      g.shadowBlur = 0;
+    }
+    // tongue
+    if (opts.tongue && !reduceMotion && Math.floor(now / 380) % 3 === 0) {
+      const tip = skin.head === 'sleek' ? R * 1.5 : R * 1.25;
+      g.strokeStyle = '#d6334a'; g.lineWidth = R * .12; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(tip - R * .2, 0); g.lineTo(tip + R * .45, 0);
+      g.moveTo(tip + R * .45, 0); g.lineTo(tip + R * .7, -R * .2);
+      g.moveTo(tip + R * .45, 0); g.lineTo(tip + R * .7, R * .2); g.stroke();
+    }
+    // outline + fill
+    g.fillStyle = skin.edge; g.save(); g.scale(1.1, 1.1); shape(); g.fill(); g.restore();
+    if (skin.pattern === 'glow') { g.shadowColor = skin.glow; g.shadowBlur = R; }
+    g.fillStyle = fill; shape(); g.fill(); g.shadowBlur = 0;
+    // head markings
+    if (skin.pattern === 'bands') { g.fillStyle = '#f4d35e'; g.beginPath(); g.ellipse(-R * .35, 0, R * .25, R * .78, 0, 0, Math.PI * 2); g.fill(); }
+    if (skin.head === 'viper') { g.fillStyle = skin.base2; g.beginPath(); g.moveTo(R * .7, 0); g.lineTo(-R * .3, -R * .35); g.lineTo(-R * .3, R * .35); g.fill(); }
+    if (skin.head === 'broad') { g.fillStyle = skin.mark; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(-R * .1, s * R * .55, R * .38, R * .12, s * .3, 0, Math.PI * 2); g.fill(); } }
+    // gloss
+    g.fillStyle = 'rgba(255,255,255,.2)'; g.beginPath(); g.ellipse(R * .2, -R * .3, R * .45, R * .2, -.2, 0, Math.PI * 2); g.fill();
+    // nostrils
+    const nose = skin.head === 'sleek' ? R * 1.3 : skin.head === 'viper' ? R * 1.0 : R * .95;
+    g.fillStyle = 'rgba(0,0,0,.45)';
+    for (const s of [-1, 1]) circle(g, nose, s * R * .17, R * .06);
+    // eyes
+    const ex = skin.head === 'sleek' ? R * .55 : R * .4, ey = skin.head === 'viper' || skin.head === 'broad' ? R * .55 : R * .45;
+    for (const s of [-1, 1]) {
+      const yy = s * ey;
+      if (opts.dead) {
+        g.strokeStyle = '#fff'; g.lineWidth = R * .1; g.lineCap = 'round';
+        g.beginPath(); g.moveTo(ex - R * .14, yy - R * .14); g.lineTo(ex + R * .14, yy + R * .14);
+        g.moveTo(ex + R * .14, yy - R * .14); g.lineTo(ex - R * .14, yy + R * .14); g.stroke();
+        continue;
+      }
+      if (skin.eye === 'slit') {
+        g.fillStyle = skin.iris; g.beginPath(); g.ellipse(ex, yy, R * .22, R * .2, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#120c06'; g.beginPath(); g.ellipse(ex, yy, R * .17, R * .045, 0, 0, Math.PI * 2); g.fill();
+      } else if (skin.eye === 'glow') {
+        g.fillStyle = skin.glow; g.shadowColor = skin.glow; g.shadowBlur = R * .9;
+        g.beginPath(); g.ellipse(ex, yy, R * .22, R * .15, 0, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0;
+        g.fillStyle = '#fff'; circle(g, ex + R * .05, yy, R * .06);
+      } else {
+        g.fillStyle = '#fff'; circle(g, ex, yy, R * .2);
+        g.fillStyle = '#111'; circle(g, ex + R * .06, yy, R * .11);
+      }
+      g.fillStyle = 'rgba(255,255,255,.85)'; circle(g, ex + R * .02, yy - R * .07, R * .045);
+    }
+    g.restore();
+  }
+
+  // ================= GAME =================
   const cvs = $('game'), ctx = cvs.getContext('2d'), board = $('board');
   const css = getComputedStyle(document.documentElement);
   const C = k => css.getPropertyValue(k).trim();
   const col = { dune: C('--dune'), line: C('--dune-line'), sand: C('--sand'), deep: C('--sand-deep'),
-                date: C('--date'), gold: C('--gold'), rock: C('--rock'), night: C('--night') };
+                date: C('--date'), gold: C('--gold'), rock: C('--rock'), night: C('--night'), ink: C('--ink') };
 
-  // ---------- storage (per-viewer convenience only) ----------
   const store = {
-    get(k, d) { try { const v = localStorage.getItem('snake2-' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem('snake2-' + k, JSON.stringify(v)); } catch (e) {} }
+    get(k, d) { try { const v = localStorage.getItem('snake3-' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('snake3-' + k, JSON.stringify(v)); } catch (e) {} }
   };
-  let mode = store.get('mode', 'classic');
-  if (!MODE_NAMES[mode]) mode = 'classic';
+  let mode = store.get('mode', 'classic'); if (!MODE_NAMES[mode]) mode = 'classic';
+  let skin = SKINS.find(s => s.id === store.get('skin', 'cobra')) || SKINS[0];
   let bests = store.get('bests', {});
   let soundOn = store.get('sound', true);
 
-  // ---------- sound (Web Audio, started by a user gesture) ----------
+  // sound
   let actx = null;
   function beep(freq, dur = .08, type = 'square', vol = .05, slide = 0) {
     if (!soundOn) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       if (actx.state === 'suspended') actx.resume();
-      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+      const o = actx.createOscillator(), gn = actx.createGain(), t = actx.currentTime;
       o.type = type; o.frequency.setValueAtTime(freq, t);
       if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
-      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur);
+      gn.gain.setValueAtTime(vol, t); gn.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(gn).connect(actx.destination); o.start(t); o.stop(t + dur);
     } catch (e) {}
   }
   const sfx = {
-    eat: () => beep(520, .07, 'square', .04, 300),
+    eat: c => beep(480 + c * 90, .07, 'square', .04, 300),
     gold: () => { beep(660, .08, 'triangle', .06); setTimeout(() => beep(990, .12, 'triangle', .06), 70); },
     level: () => [440, 554, 659].forEach((f, i) => setTimeout(() => beep(f, .1, 'triangle', .05), i * 80)),
+    tick: () => beep(330, .06, 'triangle', .05),
+    go: () => beep(660, .14, 'triangle', .06),
     die: () => beep(300, .45, 'sawtooth', .05, -240),
   };
 
-  // ---------- state ----------
-  let snake, prev, dir, queue, food, gold, rocks, score, eaten, speed, state = 'ready';
-  let cell = 0, acc = 0, last = 0, particles = [], floaters = [];
+  let snake, prev, dir, queue, food, gold, rocks, score, eaten, speed, combo, lastEat, playTime, countdown;
+  let state = 'ready', cell = 0, acc = 0, last = 0, particles = [], floaters = [];
 
-  function tickMs() { return Math.max(55, 150 - (speed - 1) * 12); }
+  const tickMs = () => Math.max(58, 150 - (speed - 1) * 11);
 
   function reset() {
     const m = Math.floor(N / 2);
-    snake = [[m, m], [m + 1, m], [m + 2, m]];
+    snake = [[m, m], [m + 1, m], [m + 2, m], [m + 3, m]];
     prev = snake.map(s => s.slice());
     dir = 'left'; queue = [];
-    score = 0; eaten = 0; speed = 1;
+    score = 0; eaten = 0; speed = 1; combo = 1; lastEat = -1e9; playTime = 0;
     rocks = new Set(); gold = null; particles = []; floaters = [];
     food = randomFree();
     updateHud();
   }
-
   function occupied() {
     const s = new Set(rocks);
     snake.forEach(([x, y]) => s.add(key(x, y)));
@@ -222,82 +472,63 @@
     if (gold) s.add(key(gold.x, gold.y));
     return s;
   }
-  function randomFree(extraBlock) {
-    const taken = occupied();
-    const free = [];
-    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) {
-      const k = key(x, y);
-      if (!taken.has(k) && !(extraBlock && extraBlock.has(k))) free.push([x, y]);
-    }
+  function randomFree(block) {
+    const taken = occupied(), free = [];
+    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) { const k = key(x, y); if (!taken.has(k) && !(block && block.has(k))) free.push([x, y]); }
     return free.length ? free[Math.floor(Math.random() * free.length)] : null;
   }
-
   function addRocks(count) {
-    // keep a 3-cell buffer ahead of the head so a rock never appears in your face
-    const [hx, hy] = snake[0], [dx, dy] = DIRS[dir];
-    const block = new Set();
-    for (let i = 1; i <= 3; i++) block.add(key((hx + dx * i + N) % N, (hy + dy * i + N) % N));
+    const [hx, hy] = snake[0], [dx, dy] = DIRS[dir], block = new Set();
+    for (let i = 1; i <= 4; i++) block.add(key((hx + dx * i + N) % N, (hy + dy * i + N) % N));
     for (let x = hx - 1; x <= hx + 1; x++) for (let y = hy - 1; y <= hy + 1; y++) block.add(key(x, y));
     for (let i = 0; i < count; i++) { const p = randomFree(block); if (p) rocks.add(key(...p)); }
   }
-
   function updateHud() {
     $('score').textContent = ar(score);
     $('best').textContent = ar(bests[mode] || 0);
-    $('level').innerHTML = 'السرعة <b>' + ar(speed) + '</b> · الطول <b>' + ar(snake.length) + '</b>';
+    $('level').innerHTML = 'السرعة <b>' + ar(speed) + '</b> · الطول <b>' + ar(snake.length) + '</b>' +
+      (combo > 1 ? ' · مضاعف <b class="combo">×' + ar(combo) + '</b>' : '');
   }
-  function bump() {
-    const el = $('score'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
-  }
+  function bump() { const el = $('score'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 
-  // ---------- input ----------
   function turn(d) {
-    if (state !== 'play') return;
+    if (state !== 'play' && state !== 'count') return;
     const lastDir = queue.length ? queue[queue.length - 1] : dir;
     if (d === lastDir || d === OPP[lastDir] || queue.length >= 3) return;
     queue.push(d);
   }
 
-  // ---------- simulation ----------
   function step() {
     if (queue.length) dir = queue.shift();
     const [dx, dy] = DIRS[dir];
     let nx = snake[0][0] + dx, ny = snake[0][1] + dy;
     if (mode === 'wrap') { nx = (nx + N) % N; ny = (ny + N) % N; }
-
     const onFood = food && nx === food[0] && ny === food[1];
     const onGold = gold && nx === gold.x && ny === gold.y;
     const grows = onFood || onGold;
     const body = grows ? snake : snake.slice(0, -1);
-
-    if (nx < 0 || ny < 0 || nx >= N || ny >= N || rocks.has(key(nx, ny)) ||
-        body.some(([x, y]) => x === nx && y === ny)) {
-      prev = snake.map(s => s.slice());
-      return gameOver(false);
-    }
-
     prev = snake.map(s => s.slice());
-    if (grows) prev.push(prev[prev.length - 1].slice()); // new tail segment grows out of the old one
+    if (nx < 0 || ny < 0 || nx >= N || ny >= N || rocks.has(key(nx, ny)) || body.some(([x, y]) => x === nx && y === ny)) return gameOver(false);
+    if (grows) prev.push(prev[prev.length - 1].slice());
     snake.unshift([nx, ny]);
     if (!grows) snake.pop();
 
+    if (grows) {
+      combo = playTime - lastEat < 3200 ? Math.min(5, combo + 1) : 1;
+      lastEat = playTime;
+    }
     if (onFood) {
-      const pts = speed;
+      const pts = speed * combo;
       score += pts; eaten++;
-      burst(nx, ny, col.date, 10); floatText(nx, ny, '+' + ar(pts));
-      sfx.eat();
-      if (eaten % 5 === 0) {
-        speed++; sfx.level();
-        if (mode === 'rocks') addRocks(3);
-      }
+      burst(nx, ny, col.date, 10); floatText(nx, ny, '+' + ar(pts) + (combo > 1 ? ' ×' + ar(combo) : ''));
+      sfx.eat(combo);
+      if (eaten % 5 === 0) { speed++; sfx.level(); if (mode === 'rocks') addRocks(3); }
       food = randomFree();
-      if (!gold && eaten >= 3 && Math.random() < .28) {
-        const p = randomFree(); if (p) gold = { x: p[0], y: p[1], ttl: 5000, max: 5000 };
-      }
+      if (!gold && eaten >= 3 && Math.random() < .28) { const p = randomFree(); if (p) gold = { x: p[0], y: p[1], ttl: 5000, max: 5000 }; }
       bump();
     }
     if (onGold) {
-      const pts = speed * 5;
+      const pts = speed * 5 * combo;
       score += pts; gold = null;
       burst(nx, ny, col.gold, 22); floatText(nx, ny, '+' + ar(pts), true);
       sfx.gold(); bump();
@@ -306,7 +537,6 @@
     updateHud();
   }
 
-  // ---------- effects ----------
   function burst(x, y, color, n) {
     if (reduceMotion) return;
     for (let i = 0; i < n; i++) {
@@ -316,101 +546,87 @@
   }
   function floatText(x, y, text, big) { floaters.push({ x: x + .5, y: y + .2, text, life: 1, big }); }
 
-  // ---------- flow ----------
   function start() {
     reset();
-    state = 'play'; acc = 0; last = performance.now();
-    $('overlay').hidden = true;
-    $('pause').textContent = 'إيقاف مؤقت';
-    setChipsDisabled(true);
     if (mode === 'rocks') addRocks(4);
-    beep(392, .06, 'triangle', .04);
+    state = 'count'; countdown = 2400; acc = 0; last = performance.now();
+    $('overlay').hidden = true; $('pause').textContent = 'إيقاف مؤقت';
+    lockMenus(true); sfx.tick();
   }
   function togglePause() {
-    if (state === 'play') {
+    if (state === 'play' || state === 'count') {
       state = 'paused';
       showOverlay('متوقفة', 'خذ نفساً. اضغط متابعة أو المسافة للرجوع.', 'متابعة');
       $('pause').textContent = 'متابعة';
-      setChipsDisabled(false, true);
     } else if (state === 'paused') {
-      state = 'play'; last = performance.now();
+      state = 'count'; countdown = 1600; last = performance.now();
       $('overlay').hidden = true; $('pause').textContent = 'إيقاف مؤقت';
     }
   }
   function gameOver(won) {
     state = 'over';
-    let msg = 'نمط ' + MODE_NAMES[mode] + ': ' + ar(score) + ' نقطة وطول الثعبان ' + ar(snake.length) + '.';
-    if (score > (bests[mode] || 0)) {
-      bests[mode] = score; store.set('bests', bests);
-      msg += ' رقم قياسي جديد!';
-    }
+    let msg = skin.name + ' في نمط ' + MODE_NAMES[mode] + ': ' + ar(score) + ' نقطة وطول ' + ar(snake.length) + '.';
+    if (score > (bests[mode] || 0)) { bests[mode] = score; store.set('bests', bests); msg += ' رقم قياسي جديد!'; }
     if (won) sfx.level(); else {
       sfx.die();
       if (!reduceMotion) { board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
     }
-    updateHud();
-    setChipsDisabled(false);
-    setTimeout(() => showOverlay(won ? 'ملأت الصحراء!' : 'انتهت اللعبة', msg, 'العب مجدداً'), won ? 0 : 450);
+    combo = 1; updateHud(); lockMenus(false);
+    setTimeout(() => showOverlay(won ? 'ملأت الصحراء!' : 'انتهت اللعبة', msg, 'العب مجدداً'), won ? 0 : 500);
   }
   function showOverlay(title, text, btn) {
     $('ov-title').textContent = title; $('ov-text').textContent = text; $('start').textContent = btn;
     $('overlay').hidden = false; $('start').focus({ preventScroll: true });
   }
-  function setChipsDisabled(dis, keepLocked) {
-    document.querySelectorAll('.chip').forEach(c => c.disabled = dis || !!keepLocked);
+  function lockMenus(on) {
+    document.querySelectorAll('.chip').forEach(c => c.disabled = on);
+    $('skins').classList.toggle('locked', on);
   }
   function setMode(m) {
     mode = m; store.set('mode', m);
     document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.mode === m)));
     board.classList.toggle('wrapmode', m === 'wrap');
-    if (state !== 'play' && state !== 'paused') { reset(); if (m === 'rocks') addRocks(4); }
-    updateHud();
+    reset(); if (m === 'rocks') addRocks(4);
+  }
+  function setSkin(s) {
+    skin = s; store.set('skin', s.id);
+    $('skin-name').textContent = s.name;
+    document.querySelectorAll('.skin').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === s.id)));
   }
 
-  // ---------- render ----------
+  // board render
   function resize() {
     const r = cvs.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
     cvs.width = Math.round(r.width * dpr); cvs.height = Math.round(r.height * dpr);
     cell = cvs.width / N;
   }
-  function rr(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
-  }
-  function mix(a, b, t) {
-    const h = s => [0, 2, 4].map(i => parseInt(s.replace('#', '').slice(i, i + 2), 16));
-    const pa = h(a), pb = h(b);
-    return 'rgb(' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t)).join(',') + ')';
+  function rr(g, x, y, w, h, r) {
+    g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
   }
   function drawDate(cx, cy, r, color, shine) {
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.ellipse(cx, cy, r * .78, r, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = shine;
-    ctx.beginPath(); ctx.ellipse(cx - r * .26, cy - r * .32, r * .18, r * .34, -.4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = col.deep;
-    ctx.fillRect(cx - cell * .04, cy - r - cell * .1, cell * .08, cell * .14);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(cx + r * .15, cy + r * .3, r * .8, r * .9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(cx, cy, r * .78, r, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = shine; ctx.beginPath(); ctx.ellipse(cx - r * .26, cy - r * .32, r * .18, r * .34, -.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = col.deep; ctx.fillRect(cx - cell * .04, cy - r - cell * .1, cell * .08, cell * .14);
   }
 
-  function draw(now, t) {
+  function drawBoard(now, t) {
     if (!cell || !snake) return;
     const W = cvs.width;
     ctx.fillStyle = col.dune; ctx.fillRect(0, 0, W, W);
     ctx.fillStyle = col.line;
     for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) if ((x + y) % 2) ctx.fillRect(x * cell, y * cell, cell, cell);
 
-    // rocks
     rocks.forEach(k => {
       const [x, y] = k.split(',').map(Number);
-      ctx.fillStyle = col.rock; rr(x * cell + cell * .08, y * cell + cell * .14, cell * .84, cell * .76, cell * .28); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.12)'; rr(x * cell + cell * .2, y * cell + cell * .22, cell * .36, cell * .2, cell * .1); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; rr(ctx, x * cell + cell * .14, y * cell + cell * .24, cell * .84, cell * .72, cell * .28); ctx.fill();
+      ctx.fillStyle = col.rock; rr(ctx, x * cell + cell * .08, y * cell + cell * .14, cell * .84, cell * .74, cell * .28); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.12)'; rr(ctx, x * cell + cell * .2, y * cell + cell * .22, cell * .36, cell * .2, cell * .1); ctx.fill();
     });
 
-    // food with a gentle pulse
     const pulse = reduceMotion ? 1 : 1 + Math.sin(now / 220) * .06;
     if (food) drawDate((food[0] + .5) * cell, (food[1] + .56) * cell, cell * .38 * pulse, col.date, 'rgba(255,255,255,.25)');
-
-    // golden date with countdown ring
     if (gold) {
       const gx = (gold.x + .5) * cell, gy = (gold.y + .5) * cell;
       const blink = gold.ttl < 1500 && Math.floor(now / 120) % 2 === 0;
@@ -420,77 +636,89 @@
       if (!blink) drawDate(gx, gy + cell * .04, cell * .36 * pulse, col.gold, 'rgba(255,255,255,.55)');
     }
 
-    // snake with smooth interpolation between ticks
-    const len = snake.length, pad = cell * .08;
-    const pos = i => {
-      const c = snake[i], p = prev[i] || c;
-      if (Math.abs(c[0] - p[0]) > 1 || Math.abs(c[1] - p[1]) > 1) return c; // wrapped edge: no slide
-      return [p[0] + (c[0] - p[0]) * t, p[1] + (c[1] - p[1]) * t];
-    };
-    for (let i = len - 1; i >= 0; i--) {
-      const [x, y] = pos(i);
-      ctx.fillStyle = mix(col.sand, col.deep, len > 1 ? i / (len - 1) : 0);
-      rr(x * cell + pad, y * cell + pad, cell - pad * 2, cell - pad * 2, cell * .32); ctx.fill();
-      // fill the gap toward the next segment so the body looks continuous
-      if (i < len - 1) {
-        const [x2, y2] = pos(i + 1);
-        if (Math.abs(x2 - x) <= 1 && Math.abs(y2 - y) <= 1) {
-          const mx = (x + x2) / 2, my = (y + y2) / 2;
-          rr(mx * cell + pad, my * cell + pad, cell - pad * 2, cell - pad * 2, cell * .32); ctx.fill();
-        }
-      }
-    }
-    // head: eyes + tongue
-    const [hx, hy] = pos(0), [dx, dy] = DIRS[dir];
-    const cx = (hx + .5) * cell, cy = (hy + .5) * cell, px = -dy, py = dx;
-    if (state === 'play' && !reduceMotion && Math.floor(now / 400) % 3 === 0) {
-      ctx.strokeStyle = col.date; ctx.lineWidth = cell * .06; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(cx + dx * cell * .4, cy + dy * cell * .4); ctx.lineTo(cx + dx * cell * .62, cy + dy * cell * .62); ctx.stroke();
-    }
-    for (const s of [-1, 1]) {
-      const ex = cx + dx * cell * .12 + px * s * cell * .18, ey = cy + dy * cell * .12 + py * s * cell * .18;
-      ctx.fillStyle = state === 'over' ? col.date : '#fff';
-      ctx.beginPath(); ctx.arc(ex, ey, cell * .1, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = col.night;
-      ctx.beginPath(); ctx.arc(ex + dx * cell * .03, ey + dy * cell * .03, cell * .055, 0, Math.PI * 2); ctx.fill();
-    }
-
-    // particles + floating score
-    particles.forEach(p => {
-      ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.arc(p.x * cell, p.y * cell, cell * .09 * p.life + 1, 0, Math.PI * 2); ctx.fill();
+    const pts = snake.map((c, i) => {
+      const p = prev[i] || c;
+      if (Math.abs(c[0] - p[0]) > 1 || Math.abs(c[1] - p[1]) > 1) return [c[0] + .5, c[1] + .5];
+      return [p[0] + (c[0] - p[0]) * t + .5, p[1] + (c[1] - p[1]) * t + .5];
     });
+    drawSnake(ctx, pts, cell, skin, now, { tongue: state === 'play', dead: state === 'over' });
+
+    particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; circle(ctx, p.x * cell, p.y * cell, cell * .09 * p.life + 1); });
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     floaters.forEach(f => {
-      ctx.globalAlpha = Math.max(0, f.life);
-      ctx.fillStyle = f.big ? col.gold : col.sand;
+      ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.big ? col.gold : col.sand;
       ctx.font = (f.big ? cell * .9 : cell * .7) + 'px Lalezar, sans-serif';
       ctx.fillText(f.text, f.x * cell, (f.y - (1 - f.life) * 1.4) * cell);
     });
     ctx.globalAlpha = 1;
+
+    if (state === 'count') {
+      const n = Math.ceil(countdown / 800);
+      const frac = (countdown % 800) / 800;
+      ctx.fillStyle = 'rgba(20,26,46,.35)'; ctx.fillRect(0, 0, W, W);
+      ctx.globalAlpha = reduceMotion ? 1 : Math.min(1, frac * 2.5);
+      ctx.fillStyle = col.sand; ctx.font = (cell * (5 + (reduceMotion ? 0 : frac * 1.5))) + 'px Lalezar, sans-serif';
+      ctx.fillText(ar(n), W / 2, W / 2);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // picker previews
+  const previews = [];
+  function buildPicker() {
+    const wrap = $('skins');
+    SKINS.forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'skin'; b.dataset.id = s.id; b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', s.name + '، ' + s.tag);
+      const c = document.createElement('canvas');
+      const dpr = window.devicePixelRatio || 1; c.width = 104 * dpr; c.height = 64 * dpr;
+      b.append(c);
+      const nm = document.createElement('b'); nm.textContent = s.name; b.append(nm);
+      const tg = document.createElement('small'); tg.textContent = s.tag; b.append(tg);
+      b.addEventListener('click', () => { setSkin(s); beep(520, .05, 'triangle', .04); });
+      wrap.append(b);
+      previews.push({ s, c, g: c.getContext('2d'), dpr });
+    });
+  }
+  function drawPreviews(now) {
+    const ph = reduceMotion ? 0 : now / 260;
+    for (const p of previews) {
+      const { g, c, s } = p, k = 14 * p.dpr;   // cell size in preview
+      g.clearRect(0, 0, c.width, c.height);
+      const pts = [];
+      for (let i = 0; i < 8; i++) pts.push([6.3 - i * .74, 2.3 + Math.sin(ph - i * .8) * .6]);
+      drawSnake(g, pts, k, s, now, { tongue: true });
+    }
   }
 
   function frame(now) {
     const dt = Math.min(100, now - last); last = now;
-    if (state === 'play') {
-      acc += dt;
+    if (state === 'count') {
+      const before = Math.ceil(countdown / 800);
+      countdown -= dt;
+      if (countdown <= 0) { state = 'play'; acc = 0; sfx.go(); }
+      else if (Math.ceil(countdown / 800) !== before) sfx.tick();
+    } else if (state === 'play') {
+      acc += dt; playTime += dt;
       const ms = tickMs();
       while (acc >= ms && state === 'play') { acc -= ms; step(); }
       if (gold) { gold.ttl -= dt; if (gold.ttl <= 0) gold = null; }
+      if (combo > 1 && playTime - lastEat > 3200) { combo = 1; updateHud(); }
     }
     particles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt / 600; });
     particles = particles.filter(p => p.life > 0);
     floaters.forEach(f => f.life -= dt / 800);
     floaters = floaters.filter(f => f.life > 0);
-    const t = state === 'play' ? Math.min(1, acc / tickMs()) : 1;
-    draw(now, t);
+    drawBoard(now, state === 'play' ? Math.min(1, acc / tickMs()) : 1);
+    if (state !== 'play' && state !== 'count') drawPreviews(now);
     requestAnimationFrame(frame);
   }
 
-  // ---------- wiring ----------
-  const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right' };
+  // input
+  const KEYS = { arrowup: 'up', arrowdown: 'down', arrowleft: 'left', arrowright: 'right', w: 'up', s: 'down', a: 'left', d: 'right' };
   document.addEventListener('keydown', e => {
-    const k = KEYS[e.key] || KEYS[e.key.toLowerCase?.()];
+    const k = KEYS[e.key.toLowerCase()];
     if (k) { e.preventDefault(); turn(k); return; }
     if (e.key === 'm' || e.key === 'M') { toggleSound(); return; }
     if (e.key === ' ' || e.key === 'Enter') {
@@ -499,39 +727,28 @@
       if (state === 'ready' || state === 'over') start(); else togglePause();
     }
   });
-
-  let sx = 0, sy = 0, swiped = false;
-  cvs.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; swiped = false; });
+  let sx = 0, sy = 0;
+  cvs.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
   cvs.addEventListener('pointermove', e => {
-    if (swiped || e.buttons === 0 && e.pointerType === 'mouse') return;
+    if (e.pointerType === 'mouse' && e.buttons === 0) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
     turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
-    sx = e.clientX; sy = e.clientY;   // allow chained swipes without lifting the finger
+    sx = e.clientX; sy = e.clientY;
   });
-
-  document.querySelectorAll('.pad button').forEach(b =>
-    b.addEventListener('pointerdown', e => { e.preventDefault(); turn(b.dataset.dir); }));
+  document.querySelectorAll('.pad button').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); turn(b.dataset.dir); }));
   document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => setMode(c.dataset.mode)));
 
-  function toggleSound() {
-    soundOn = !soundOn; store.set('sound', soundOn);
-    $('sound').textContent = 'الصوت: ' + (soundOn ? 'يعمل' : 'مكتوم');
-    $('sound').setAttribute('aria-pressed', String(soundOn));
-    if (soundOn) beep(660, .05, 'triangle', .04);
-  }
+  function syncSound() { $('sound').textContent = 'الصوت: ' + (soundOn ? 'يعمل' : 'مكتوم'); $('sound').setAttribute('aria-pressed', String(soundOn)); }
+  function toggleSound() { soundOn = !soundOn; store.set('sound', soundOn); syncSound(); if (soundOn) beep(660, .05, 'triangle', .04); }
   $('sound').addEventListener('click', toggleSound);
   $('start').addEventListener('click', () => (state === 'paused' ? togglePause() : start()));
-  $('pause').addEventListener('click', () => { if (state === 'play' || state === 'paused') togglePause(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') togglePause(); });
+  $('pause').addEventListener('click', () => { if (state === 'play' || state === 'paused' || state === 'count') togglePause(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && (state === 'play' || state === 'count')) togglePause(); });
 
-  $('sound').textContent = 'الصوت: ' + (soundOn ? 'يعمل' : 'مكتوم');
-  $('sound').setAttribute('aria-pressed', String(soundOn));
-  setMode(mode);
-  new ResizeObserver(resize).observe(cvs);
-  resize();
-  last = performance.now();
-  requestAnimationFrame(frame);
+  buildPicker(); setSkin(skin); syncSound(); setMode(mode);
+  new ResizeObserver(resize).observe(cvs); resize();
+  last = performance.now(); requestAnimationFrame(frame);
 })();
 </script>
 </body>

@@ -22,6 +22,7 @@
     --gold: #ffd75e;
     --ink: #ece6d6;
     --muted: #8f97b3;
+    --net: #7fd6ff;
     --display: "Lalezar", "IBM Plex Sans Arabic", system-ui, sans-serif;
     --body: "IBM Plex Sans Arabic", system-ui, "Segoe UI", Tahoma, sans-serif;
     color-scheme: dark;
@@ -94,6 +95,17 @@
   .lb li span:first-child, .lb li span:last-child { color: var(--muted); }
   .lb li.me { color: var(--gold); font-weight: 600; }
   .lb li.me span { color: var(--gold); }
+  .lb li.net span:nth-child(2) { color: var(--net); }
+  .lb li i { display: inline-block; width: .5em; height: .5em; border-radius: 50%; background: var(--net); margin-inline-end: 4px; vertical-align: middle; }
+  .netpill {
+    position: absolute; top: 10px; inset-inline-end: 10px; pointer-events: none;
+    font-size: .75rem; font-weight: 600; color: var(--muted);
+    background: color-mix(in srgb, var(--night) 72%, transparent); border-radius: 999px; padding: 3px 10px 3px 12px;
+    box-shadow: inset 0 0 0 1px var(--dune-line); display: flex; align-items: center; gap: 6px;
+  }
+  .netpill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+  .netpill.on { color: var(--net); }
+  .netpill.on::before { background: var(--net); box-shadow: 0 0 8px var(--net); }
   .lb li.sep { display: block; text-align: center; color: var(--muted); line-height: .8; }
 
   .boost {
@@ -137,7 +149,7 @@
 
 <div class="wrap" dir="rtl" lang="ar">
   <header>
-    <h1>ثعبان الصحراء<sup>الساحة</sup></h1>
+    <h1>ثعبان الصحراء<sup>أونلاين</sup></h1>
     <div class="scores">
       <div class="stat"><span>الطول</span><b id="score">٠</b></div>
       <div class="stat"><span>القتلى</span><b id="kills">٠</b></div>
@@ -156,10 +168,11 @@
   <div class="board" id="board">
     <canvas id="game" aria-label="ساحة اللعب"></canvas>
     <div class="lb" aria-live="off"><h4>الأكبر</h4><ol id="lb"></ol></div>
+    <div class="netpill" id="netpill" aria-live="polite">وضع فردي</div>
     <button class="boost" id="boost" aria-label="تسريع">سرعة</button>
     <div class="overlay" id="overlay">
       <h2 id="ov-title">الساحة</h2>
-      <p id="ov-text">كُل الحبوب الصغيرة لتكبر. إذا لمس رأسك جسم ثعبان آخر تموت، وإذا لمس رأسه جسمك يموت هو ويترك طعامه مكانه.</p>
+      <p id="ov-text">كُل الحبوب الصغيرة لتكبر. إذا لمس رأسك جسم ثعبان آخر تموت، وإذا لمس رأسه جسمك يموت هو ويترك طعامه مكانه. كل من يفتح الصفحة الآن يلعب معك في نفس الساحة.</p>
       <button class="primary" id="start">ادخل الساحة</button>
       <small>وجّه الثعبان بالفأرة أو بإصبعك أو بالأسهم. اضغط مطولاً أو المسافة للتسريع · P للإيقاف · M للصوت</small>
     </div>
@@ -362,7 +375,7 @@
   }
 
   // ================= ARENA =================
-  const WORLD = 4200, FOOD_TARGET = 1100, BOT_COUNT = 13;
+  const WORLD = 4200, SLOT_COUNT = 1100, BOT_COUNT = 13;
   const BOT_NAMES = ['صقر الصحراء', 'الذيب', 'برق', 'رعد', 'سهم', 'نمر الرمل', 'أبو شهاب', 'غيمة', 'فهد', 'قمر الليل',
                      'ريم', 'العاصفة', 'شاهين', 'سراب', 'الكاسر', 'نجمة', 'زوبعة', 'الصياد'];
   const FOOD_COLORS = ['#c4512f', '#ffd75e', '#8fd16a', '#a46bd6', '#f08a3c', '#5fc6e8', '#f26d8f'];
@@ -371,7 +384,7 @@
   const css = getComputedStyle(document.documentElement);
   const C = k => css.getPropertyValue(k).trim();
   const col = { outside: C('--outside'), dune: C('--dune'), line: C('--dune-line'), sand: C('--sand'), date: C('--date'),
-                gold: C('--gold'), ink: C('--ink'), night: C('--night'), muted: C('--muted') };
+                gold: C('--gold'), ink: C('--ink'), night: C('--night'), muted: C('--muted'), net: C('--net') };
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem('snake4-' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -401,26 +414,40 @@
     kill: () => [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, .1, 'triangle', .06), i * 70)),
     die: () => beep(300, .5, 'sawtooth', .05, -240),
     start: () => beep(440, .1, 'triangle', .05, 220),
+    join: () => beep(880, .08, 'triangle', .04, -200),
   };
 
+  // ---------- seeded randomness (every player computes the same food) ----------
+  function hash(a, b, c) {
+    let t = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+
   // ---------- world state ----------
-  let snakes = [], food = [], player = null, state = 'ready', time = 0;
+  // snake kinds: me (you), bot (AI run here), rbot (AI run by the host), remote (another player)
+  let snakes = new Map(), slots = [], food = [], drops = new Map(), me = null, state = 'ready', time = 0;
   let cam = { x: WORLD / 2, y: WORLD / 2, r: 10 }, headScreen = { x: 0, y: 0 }, particles = [], floaters = [];
-  let lbTimer = 0;
+  let lbTimer = 0, life = 0, botCounter = 0;
 
   const radiusFor = m => 8 + Math.min(12, Math.sqrt(m) * .62);
   const knotsFor = m => 5 + Math.floor(Math.sqrt(m) * 2.1);
   const rnd = (a, b) => a + Math.random() * (b - a);
+  const alive = () => [...snakes.values()].filter(s => s.alive && !s.hidden);
 
-  function makeSnake(name, sk, x, y, mass, bot) {
-    const ang = rnd(0, TAU);
-    const s = { name, skin: sk, bot, mass, ang, target: ang, alive: true, boost: false, boostAcc: 0, kills: 0,
+  function makeSnake(key, kind, name, sk, x, y, mass, ang = rnd(0, TAU)) {
+    const s = { key, kind, name, skin: sk, mass, ang, target: ang, alive: true, boost: false, kills: 0, hidden: false,
                 shield: 2.2, think: 0, segs: [], r: 0, sp: 0, seed: Math.random() * 1000, minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    s.r = radiusFor(mass); s.sp = s.r / .46;
-    const n = knotsFor(mass);
-    for (let i = 0; i < n; i++) s.segs.push({ x: x - Math.cos(ang) * s.sp * i, y: y - Math.sin(ang) * s.sp * i });
-    bbox(s);
+    layOut(s, x, y);
+    snakes.set(key, s);
     return s;
+  }
+  function layOut(s, x, y) {
+    s.r = radiusFor(s.mass); s.sp = s.r / .46;
+    s.segs = [];
+    for (let i = 0, n = knotsFor(s.mass); i < n; i++) s.segs.push({ x: x - Math.cos(s.ang) * s.sp * i, y: y - Math.sin(s.ang) * s.sp * i });
+    bbox(s);
   }
   function bbox(s) {
     let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
@@ -431,31 +458,48 @@
     for (let tries = 0; tries < 40; tries++) {
       const x = rnd(300, WORLD - 300), y = rnd(300, WORLD - 300);
       if (awayFrom && Math.hypot(x - awayFrom.x, y - awayFrom.y) < 600) continue;
-      if (!snakes.some(o => o.alive && x > o.minX - 250 && x < o.maxX + 250 && y > o.minY - 250 && y < o.maxY + 250)) return { x, y };
+      if (!alive().some(o => x > o.minX - 250 && x < o.maxX + 250 && y > o.minY - 250 && y < o.maxY + 250)) return { x, y };
     }
     return { x: rnd(300, WORLD - 300), y: rnd(300, WORLD - 300) };
   }
-  function usedNames() { return new Set(snakes.filter(s => s.alive).map(s => s.name)); }
   function spawnBot() {
-    const used = usedNames();
-    const names = BOT_NAMES.filter(n => !used.has(n));
-    const name = names[Math.floor(Math.random() * names.length)] || 'ثعبان';
-    const p = safeSpot(player && player.alive ? player.segs[0] : null);
+    const used = new Set(alive().map(s => s.name));
+    const free = BOT_NAMES.map((n, i) => i).filter(i => !used.has(BOT_NAMES[i]));
+    const ni = free.length ? free[Math.floor(Math.random() * free.length)] : 0;
+    const p = safeSpot(me && me.alive ? me.segs[0] : null);
     const mass = Math.random() < .3 ? rnd(60, 220) : rnd(10, 50);
-    const s = makeSnake(name, SKINS[Math.floor(Math.random() * SKINS.length)], p.x, p.y, mass, true);
-    snakes.push(s);
+    const id = net.idp + (botCounter++).toString(36);
+    const s = makeSnake('b:' + id, 'bot', BOT_NAMES[ni], SKINS[Math.floor(Math.random() * SKINS.length)], p.x, p.y, mass);
+    s.botId = id; s.ni = ni;
     return s;
   }
-  function addFood(x, y, v, c) {
-    if (x < 20 || y < 20 || x > WORLD - 20 || y > WORLD - 20) return;
-    food.push({ x, y, v, r: Math.min(13, 3.2 + Math.sqrt(v) * 2.4), c: c || FOOD_COLORS[Math.floor(Math.random() * FOOD_COLORS.length)], ph: Math.random() * TAU });
-  }
-  function seedFood() { while (food.length < FOOD_TARGET) addFood(rnd(30, WORLD - 30), rnd(30, WORLD - 30), Math.random() < .12 ? 2 : 1); }
 
-  function initWorld() {
-    snakes = []; food = []; particles = []; floaters = [];
-    seedFood();
-    for (let i = 0; i < BOT_COUNT; i++) spawnBot();
+  // ---------- food: fixed seeded slots + drops from dead snakes ----------
+  function placeSlot(f) {
+    f.x = 30 + hash(f.i, f.gen, 1) * (WORLD - 60); f.y = 30 + hash(f.i, f.gen, 2) * (WORLD - 60);
+    f.v = hash(f.i, f.gen, 3) < .12 ? 2 : 1; f.r = Math.min(13, 3.2 + Math.sqrt(f.v) * 2.4);
+    f.c = FOOD_COLORS[Math.floor(hash(f.i, f.gen, 4) * FOOD_COLORS.length)];
+  }
+  function initFood() {
+    slots = []; drops = new Map();
+    for (let i = 0; i < SLOT_COUNT; i++) { const f = { i, gen: 0, ph: Math.random() * TAU }; placeSlot(f); slots.push(f); }
+    rebuildFood();
+  }
+  function rebuildFood() { food = slots.concat([...drops.values()]); }
+  function bumpSlot(i, gen) { const f = slots[i]; if (f && f.gen <= gen) { f.gen = gen + 1; placeSlot(f); } }
+  function removeDrop(id) { if (drops.delete(id)) rebuildFood(); }
+  function dropBody(s, base) {
+    const colors = s.skin.pattern === 'bands' ? s.skin.bands.filter(c => c !== '#1b1716') : [s.skin.base, s.skin.base2];
+    const n = s.segs.length, per = (s.mass * .8 + 4) / (n * 2), h0 = hashStr(base);
+    s.segs.forEach((k, i) => {
+      for (let j = 0; j < 2; j++) {
+        const id = base + ':' + i + ':' + j;
+        const x = k.x + (hash(h0, i, j * 2 + 1) - .5) * 2 * s.r, y = k.y + (hash(h0, i, j * 2 + 2) - .5) * 2 * s.r;
+        if (x < 20 || y < 20 || x > WORLD - 20 || y > WORLD - 20) continue;
+        drops.set(id, { id, x, y, v: per, r: Math.min(13, 3.2 + Math.sqrt(per) * 2.4), c: colors[(i + j) % colors.length], ph: Math.random() * TAU });
+      }
+    });
+    rebuildFood();
   }
 
   // ---------- physics ----------
@@ -465,8 +509,8 @@
     const x = ax + dx * t - px, y = ay + dy * t - py; return x * x + y * y;
   }
   function hitsBody(px, py, rad, except) {
-    for (const o of snakes) {
-      if (!o.alive || o === except) continue;
+    for (const o of snakes.values()) {
+      if (!o.alive || o.hidden || o === except) continue;
       const m = rad + o.r;
       if (px < o.minX - m || px > o.maxX + m || py < o.minY - m || py > o.maxY + m) continue;
       const lim = (rad + o.r * .9) ** 2, sg = o.segs;
@@ -474,19 +518,7 @@
     }
     return null;
   }
-
-  function updateSnake(s, dt) {
-    let d = s.target - s.ang; d = Math.atan2(Math.sin(d), Math.cos(d));
-    const turn = (4.4 - Math.min(1.6, s.r / 14)) * dt;
-    s.ang += Math.max(-turn, Math.min(turn, d));
-    const boosting = s.boost && s.mass > 14;
-    const v = boosting ? 300 : 155;
-    const h = s.segs[0];
-    h.x += Math.cos(s.ang) * v * dt; h.y += Math.sin(s.ang) * v * dt;
-    if (boosting) {
-      s.mass -= 5 * dt; s.boostAcc += dt;
-      if (s.boostAcc > .1) { s.boostAcc = 0; const t = s.segs[s.segs.length - 1]; addFood(t.x + rnd(-4, 4), t.y + rnd(-4, 4), .45, s.skin.base); }
-    }
+  function follow(s) {
     s.r = radiusFor(s.mass); s.sp = s.r / .46;
     for (let i = 1; i < s.segs.length; i++) {
       const a = s.segs[i - 1], b = s.segs[i], dx = a.x - b.x, dy = a.y - b.y, dd = Math.hypot(dx, dy);
@@ -495,39 +527,77 @@
     const n = knotsFor(s.mass);
     while (s.segs.length < n) { const t = s.segs[s.segs.length - 1]; s.segs.push({ x: t.x, y: t.y }); }
     while (s.segs.length > n) s.segs.pop();
-    if (s.shield > 0) s.shield -= dt;
     bbox(s);
+  }
+  function moveLocal(s, dt) {
+    let d = s.target - s.ang; d = Math.atan2(Math.sin(d), Math.cos(d));
+    const turn = (4.4 - Math.min(1.6, s.r / 14)) * dt;
+    s.ang += Math.max(-turn, Math.min(turn, d));
+    const boosting = s.boost && s.mass > 14;
+    s.boosting = boosting;
+    const v = boosting ? 300 : 155, h = s.segs[0];
+    h.x += Math.cos(s.ang) * v * dt; h.y += Math.sin(s.ang) * v * dt;
+    if (boosting) s.mass -= 5 * dt;
+    if (s.shield > 0) s.shield -= dt;
+    follow(s);
+  }
+  // other people's snakes: steer the head toward where their last message says it should be by now
+  function moveRemote(s, dt, nowMs) {
+    const n = s.net; if (!n) return;
+    const age = Math.min(.3, (nowMs - n.t) / 1000), v = n.b ? 300 : 155;
+    const px = n.x + Math.cos(n.a) * v * age, py = n.y + Math.sin(n.a) * v * age, h = s.segs[0];
+    s.mass += (n.m - s.mass) * Math.min(1, dt * 6);
+    let d = n.a - s.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); s.ang += d * Math.min(1, dt * 12);
+    if (Math.hypot(px - h.x, py - h.y) > 260) { layOut(s, px, py); return; }
+    const k = Math.min(1, dt * 12); h.x += (px - h.x) * k; h.y += (py - h.y) * k;
+    s.shield = n.sh ? 1 : 0;
+    follow(s);
   }
 
   function eat(s, dt) {
     const h = s.segs[0], reach = s.r + 26, eatR = s.r + 4;
-    for (let i = food.length - 1; i >= 0; i--) {
-      const f = food[i], dx = h.x - f.x, dy = h.y - f.y;
+    let changed = false;
+    for (const f of food) {
+      if (f.gone) continue;
+      const dx = h.x - f.x, dy = h.y - f.y;
       if (dx > reach + 20 || dx < -reach - 20 || dy > reach + 20 || dy < -reach - 20) continue;
       const d = Math.hypot(dx, dy);
       if (d < eatR + f.r) {
         s.mass += f.v;
-        food[i] = food[food.length - 1]; food.pop();
-        if (s === player) { sfx.eat(f.v > 1.5); if (f.v > 1.5) burst(f.x, f.y, f.c, 5); }
-      } else if (d < reach + f.r) {           // gentle magnet toward the mouth
+        if (s === me) { sfx.eat(f.v > 1.5); if (f.v > 1.5) burst(f.x, f.y, f.c, 5); }
+        if (f.id) { pushEvent(['x', f.id]); drops.delete(f.id); f.gone = true; changed = true; }
+        else { pushEvent(['e', f.i, f.gen]); bumpSlot(f.i, f.gen); }
+      } else if (d < reach + f.r) {
         const k = Math.min(1, 260 * dt / d); f.x += dx * k; f.y += dy * k;
       }
     }
+    if (changed) rebuildFood();
   }
 
-  function kill(s, by) {
+  // a snake we are in charge of (you, or a bot we run) dies here and tells everyone
+  function killLocal(s, by) {
+    const local = s === me ? 'p' : s.key, no = s === me ? life : 0;
+    pushEvent(['d', local, no, by ? by.key : '']);
+    dieVisual(s, s === me ? myKey() : s.key, no);
+    if (by) credit(by.key, s);
+    if (s === me) playerDied(by);
+  }
+  const deathsDone = new Set(), deadBots = new Set();
+  function dieVisual(s, key, no) {
+    const tag = key + ':' + no;
+    if (deathsDone.has(tag) || !s.alive) return;
+    deathsDone.add(tag);
     s.alive = false; s.deadAt = time;
-    const n = s.segs.length, total = s.mass * .8 + 4, per = total / (n * 2);
-    const colors = s.skin.pattern === 'bands' ? s.skin.bands.filter(c => c !== '#1b1716') : [s.skin.base, s.skin.base2];
-    s.segs.forEach((k, i) => {
-      for (let j = 0; j < 2; j++) addFood(k.x + rnd(-s.r, s.r), k.y + rnd(-s.r, s.r), per, colors[(i + j) % colors.length]);
-    });
+    if (s.botId) deadBots.add(s.botId);
+    dropBody(s, 'd:' + tag);
     burst(s.segs[0].x, s.segs[0].y, s.skin.base, 16);
-    if (by) {
-      by.kills++;
-      if (by === player) { sfx.kill(); floatText(player.segs[0].x, player.segs[0].y - 30, 'أسقطت ' + s.name + '!', true); }
+  }
+  function credit(killerKey, victim) {
+    const k = snakes.get(killerKey);
+    if (k) k.kills++;
+    if (killerKey === myKey() && me && me.alive) {
+      sfx.kill(); floatText(me.segs[0].x, me.segs[0].y - 30, 'أسقطت ' + victim.name + '!', true);
     }
-    if (s === player) playerDied(by);
   }
 
   // ---------- bot brain ----------
@@ -551,12 +621,14 @@
     }
     if (bestF) want = Math.atan2(bestF.y - h.y, bestF.x - h.x);
     else if (Math.random() < .35) want = s.ang + rnd(-1, 1);
-    // big bots try to cut in front of the player
-    if (player && player.alive && s.mass > 40 && Math.random() < .3) {
-      const p = player.segs[0], dx = p.x - h.x, dy = p.y - h.y;
-      if (dx * dx + dy * dy < 320 * 320) want = Math.atan2(p.y + Math.sin(player.ang) * 150 - h.y, p.x + Math.cos(player.ang) * 150 - h.x);
+    // big bots try to cut in front of a nearby player
+    if (s.mass > 40 && Math.random() < .3) {
+      for (const p of snakes.values()) {
+        if (!p.alive || p.hidden || (p.kind !== 'me' && p.kind !== 'remote')) continue;
+        const ph = p.segs[0], dx = ph.x - h.x, dy = ph.y - h.y;
+        if (dx * dx + dy * dy < 320 * 320) { want = Math.atan2(ph.y + Math.sin(p.ang) * 150 - h.y, ph.x + Math.cos(p.ang) * 150 - h.x); break; }
+      }
     }
-    // keep away from the wall
     const m = 220;
     if (h.x < m || h.y < m || h.x > WORLD - m || h.y > WORLD - m) want = Math.atan2(WORLD / 2 - h.y, WORLD / 2 - h.x);
     if (danger(want)) {
@@ -575,65 +647,211 @@
   }
   function floatText(x, y, text, big) { floaters.push({ x, y, text, life: 1, big }); }
 
+  // ================= ONLINE (room capability) =================
+  // Every open copy of this page shares one arena. Each player runs their own snake and sends its
+  // head, size and recent events in their presence. The player who has been here longest also runs the bots.
+  const net = { idp: Math.random().toString(36).slice(2, 6), room: null, myPeer: null, isHost: true, hostPeer: null, since: Date.now(), hb: 0,
+                last: new Map(), lastSeq: new Map(), events: [], seq: 0, sendT: 0, players: 1 };
+  const myKey = () => 'p:' + (net.myPeer || 'me');
+  function pushEvent(e) {
+    if (!net.room) return;
+    net.events.push([++net.seq, ...e]);
+    if (net.events.length > 90) net.events.splice(0, net.events.length - 90);
+  }
+  const cleanName = v => String(v || '').replace(/[\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').slice(0, 14) || 'لاعب';
+  const num = (v, d = 0) => Number.isFinite(+v) ? +v : d;
+
+  function sendPresence() {
+    const r = net.room; if (!r) return;
+    const mine = me && me.alive && !me.hidden && state !== 'ready' ? me : null;
+    const obj = {
+      g: 1, since: net.since, hb: ++net.hb, n: playerName(),
+      me: mine ? { id: life, x: Math.round(mine.segs[0].x), y: Math.round(mine.segs[0].y), a: +mine.ang.toFixed(2),
+                   m: +mine.mass.toFixed(1), s: SKINS.indexOf(mine.skin), b: mine.boosting ? 1 : 0, k: mine.kills, sh: mine.shield > 0 ? 1 : 0 } : null,
+      bots: net.isHost ? [...snakes.values()].filter(s => s.kind === 'bot' && s.alive).map(s =>
+              [s.botId, Math.round(s.segs[0].x), Math.round(s.segs[0].y), +s.ang.toFixed(2), +s.mass.toFixed(1), SKINS.indexOf(s.skin), s.ni, s.boosting ? 1 : 0]) : null,
+      ev: net.events.slice(-70),
+    };
+    let txt = JSON.stringify(obj);
+    while (new Blob([txt]).size > 3900 && obj.ev.length) { obj.ev = obj.ev.slice(Math.ceil(obj.ev.length / 3)); txt = JSON.stringify(obj); }
+    r.presence(obj).catch(() => {});
+  }
+
+  function setHost(v) {
+    if (v === net.isHost) return;
+    net.isHost = v;
+    for (const s of snakes.values()) {
+      if (v && s.kind === 'rbot') { s.kind = 'bot'; s.think = 0; s.target = s.ang; }
+      else if (!v && s.kind === 'bot') { s.kind = 'rbot'; s.lastSeen = performance.now(); s.net = { x: s.segs[0].x, y: s.segs[0].y, a: s.ang, m: s.mass, b: 0, t: performance.now() }; }
+    }
+  }
+
+  function syncRoom(nowMs) {
+    const r = net.room;
+    if (!r) return;
+    const peers = r.peers();
+    const meP = peers.find(p => p.sameTab);
+    if (meP) net.myPeer = meP.peer;
+    // host = the fresh game client that arrived first
+    let host = null, count = 0;
+    for (const p of peers) {
+      const pr = p.presence;
+      if (!pr || pr.g !== 1) continue;
+      if (!p.sameTab && Date.now() - p.updatedAt > 2500) continue;
+      count++;
+      const since = num(pr.since, Infinity);
+      if (!host || since < host.since || (since === host.since && p.peer < host.peer)) host = { since, peer: p.peer };
+    }
+    net.players = Math.max(1, count);
+    net.hostPeer = host ? host.peer : net.myPeer;
+    setHost(!host || host.peer === net.myPeer || !r.connected());
+
+    const present = new Set();
+    for (const p of peers) {
+      if (p.sameTab || p.kind !== 'viewer') continue;
+      const pr = p.presence;
+      if (!pr || pr.g !== 1) continue;
+      present.add(p.peer);
+      if (net.last.get(p.peer) === pr) continue;   // unchanged since last frame
+      net.last.set(p.peer, pr);
+      applyPeer(p.peer, pr, nowMs);
+    }
+    // players who left: their snakes vanish
+    for (const s of [...snakes.values()]) {
+      if (s.kind === 'remote' && !present.has(s.peer)) snakes.delete(s.key);
+      if (s.kind === 'rbot' && nowMs - (s.lastSeen || 0) > 1500) snakes.delete(s.key);
+    }
+    for (const k of [...net.last.keys()]) if (!present.has(k)) { net.last.delete(k); net.lastSeq.delete(k); }
+  }
+
+  function applyPeer(peer, pr, nowMs) {
+    // 1. events (eaten food, deaths)
+    const ev = Array.isArray(pr.ev) ? pr.ev : [];
+    let last = net.lastSeq.get(peer) || 0, top = last;
+    for (const e of ev) {
+      if (!Array.isArray(e)) continue;
+      const seq = num(e[0]); if (seq <= last) continue; if (seq > top) top = seq;
+      if (e[1] === 'e') bumpSlot(num(e[2], -1) | 0, num(e[3]) | 0);
+      else if (e[1] === 'x' && typeof e[2] === 'string') removeDrop(e[2]);
+      else if (e[1] === 'd') {
+        const vKey = e[2] === 'p' ? 'p:' + peer : String(e[2]), no = num(e[3]) | 0, killer = String(e[4] || '');
+        const s = snakes.get(vKey);
+        if (s && s.alive && s.kind !== 'me' && s.kind !== 'bot') { dieVisual(s, vKey, no); if (killer) credit(killer, s); }
+        if (vKey.startsWith('b:')) deadBots.add(vKey.slice(2));
+      }
+    }
+    net.lastSeq.set(peer, top);
+    // 2. their snake
+    const key = 'p:' + peer, m = pr.me;
+    let s = snakes.get(key);
+    if (m && typeof m === 'object') {
+      const id = num(m.id), sk = SKINS[num(m.s) | 0] || SKINS[0];
+      const n = { x: num(m.x), y: num(m.y), a: num(m.a), m: Math.max(1, num(m.m, 10)), b: m.b ? 1 : 0, sh: m.sh ? 1 : 0, t: nowMs };
+      if ((!s || s.life !== id) && !deathsDone.has(key + ':' + id)) {
+        snakes.delete(key);
+        s = makeSnake(key, 'remote', cleanName(pr.n), sk, n.x, n.y, n.m, n.a);
+        s.peer = peer; s.life = id;
+        sfx.join();
+      }
+      if (s && s.alive) { s.net = n; s.name = cleanName(pr.n); s.skin = sk; s.kills = num(m.k) | 0; }
+    } else if (s && s.alive) {
+      snakes.delete(key);           // paused or back on the menu
+    }
+    // 3. bots, from the host only
+    if (peer === net.hostPeer && !net.isHost && Array.isArray(pr.bots)) {
+      for (const b of pr.bots) {
+        if (!Array.isArray(b)) continue;
+        const id = String(b[0]).slice(0, 12); if (deadBots.has(id)) continue;
+        const bk = 'b:' + id, n = { x: num(b[1]), y: num(b[2]), a: num(b[3]), m: Math.max(1, num(b[4], 10)), b: b[7] ? 1 : 0, sh: 0, t: nowMs };
+        let bs = snakes.get(bk);
+        if (!bs) { bs = makeSnake(bk, 'rbot', BOT_NAMES[num(b[6]) | 0] || 'ثعبان', SKINS[num(b[5]) | 0] || SKINS[0], n.x, n.y, n.m, n.a); bs.botId = id; bs.ni = num(b[6]) | 0; bs.shield = 0; }
+        if (bs.kind === 'rbot') { bs.net = n; bs.lastSeen = nowMs; bs.ni = num(b[6]) | 0; bs.name = BOT_NAMES[bs.ni] || 'ثعبان'; bs.skin = SKINS[num(b[5]) | 0] || SKINS[0]; }
+      }
+    }
+  }
+
+  async function connectRoom() {
+    let r = null;
+    try { r = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { r = null; }
+    if (!r) { updateNetPill(); return; }
+    net.room = r;
+    r.onConnection(c => { if (c) net.since = Math.min(net.since, Date.now()); updateNetPill(); }, () => { net.room = null; setHost(true); updateNetPill(); });
+    r.onPeers(() => updateNetPill(), () => {});
+    updateNetPill();
+  }
+  function updateNetPill() {
+    const el = $('netpill');
+    if (!net.room) { el.textContent = 'وضع فردي'; el.classList.remove('on'); return; }
+    if (!net.room.connected()) { el.textContent = 'يتصل…'; el.classList.remove('on'); return; }
+    el.textContent = 'أونلاين · ' + ar(net.players) + (net.players === 1 ? ' لاعب' : ' لاعبين');
+    el.classList.add('on');
+  }
+
   // ---------- flow ----------
-  function playerName() { return ($('pname').value.trim() || 'أنت').slice(0, 14); }
+  function playerName() { return cleanName($('pname').value.trim() || 'أنت'); }
   function start() {
     store.set('name', $('pname').value.trim());
-    if (player) snakes = snakes.filter(s => s !== player);
+    if (me) snakes.delete(me.key);
+    life++;
     const p = safeSpot();
-    player = makeSnake(playerName(), skin, p.x, p.y, 10, false);
-    player.shield = 2.5;
-    snakes.push(player);
+    me = makeSnake(myKey(), 'me', playerName(), skin, p.x, p.y, 10);
+    me.shield = 2.5;
     cam.x = p.x; cam.y = p.y;
     state = 'play';
     $('overlay').hidden = true; $('pause').textContent = 'إيقاف مؤقت';
     $('setup').classList.add('locked');
-    sfx.start(); updateHud(true);
+    sfx.start(); updateHud();
   }
-  function rankOf(s) { return [...snakes].filter(o => o.alive || o === s).sort((a, b) => b.mass - a.mass).indexOf(s) + 1; }
+  function rankOf(s) { return alive().sort((a, b) => b.mass - a.mass).indexOf(s) + 1; }
   function playerDied(by) {
     state = 'over';
-    const score = Math.floor(player.mass);
+    const score = Math.floor(me.mass);
     let msg = by ? 'اصطدمت بجسم ' + by.name + '.' : 'اصطدمت بحدود الساحة.';
-    msg += ' طولك ' + ar(score) + ' وأسقطت ' + ar(player.kills) + (player.kills === 1 ? ' ثعباناً.' : ' ثعابين.');
+    msg += ' طولك ' + ar(score) + ' وأسقطت ' + ar(me.kills) + (me.kills === 1 ? ' ثعباناً.' : ' ثعابين.');
     if (score > best) { best = score; store.set('best', best); msg += ' رقم قياسي جديد!'; }
     sfx.die();
     if (!reduceMotion) { board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
     $('setup').classList.remove('locked');
-    updateHud(true);
+    updateHud();
     setTimeout(() => {
       $('ov-title').textContent = 'سقطت!'; $('ov-text').textContent = msg; $('start').textContent = 'العب مجدداً';
       $('overlay').hidden = false; $('start').focus({ preventScroll: true });
     }, 700);
   }
+  const online = () => net.room && net.room.connected() && net.players > 1;
   function togglePause() {
     if (state === 'play') {
       state = 'paused';
-      $('ov-title').textContent = 'متوقفة'; $('ov-text').textContent = 'الساحة متجمدة. اضغط متابعة أو P للرجوع.'; $('start').textContent = 'متابعة';
+      if (me && online()) me.hidden = true;     // others stop seeing you while paused
+      $('ov-title').textContent = 'متوقفة';
+      $('ov-text').textContent = online() ? 'ثعبانك مخفي عن اللاعبين الآخرين لين ترجع. الساحة تكمل بدونك.' : 'الساحة متجمدة. اضغط متابعة أو P للرجوع.';
+      $('start').textContent = 'متابعة';
       $('overlay').hidden = false; $('pause').textContent = 'متابعة';
     } else if (state === 'paused') {
-      state = 'play'; $('overlay').hidden = true; $('pause').textContent = 'إيقاف مؤقت';
+      state = 'play'; if (me) { me.hidden = false; me.shield = 2; }
+      $('overlay').hidden = true; $('pause').textContent = 'إيقاف مؤقت';
     }
   }
 
   // ---------- HUD + leaderboard ----------
-  function updateHud(force) {
-    const alive = snakes.filter(s => s.alive);
-    const me = player && (player.alive || state === 'over') ? player : null;
-    $('score').textContent = ar(me ? me.mass : 0);
-    $('kills').textContent = ar(me ? me.kills : 0);
+  function updateHud() {
+    const list = alive().sort((a, b) => b.mass - a.mass);
+    const mine = me && (me.alive || state === 'over') ? me : null;
+    $('score').textContent = ar(mine ? mine.mass : 0);
+    $('kills').textContent = ar(mine ? mine.kills : 0);
     $('best').textContent = ar(best);
-    $('status').innerHTML = me && me.alive
-      ? 'ترتيبك <b>' + ar(rankOf(me)) + '</b> من <b>' + ar(alive.length) + '</b> · الطعام في الساحة <b>' + ar(food.length) + '</b>'
-      : 'الثعابين في الساحة <b>' + ar(alive.length) + '</b>';
-    const sorted = alive.sort((a, b) => b.mass - a.mass);
-    const top = sorted.slice(0, 8);
+    $('status').innerHTML = mine && mine.alive && !mine.hidden
+      ? 'ترتيبك <b>' + ar(rankOf(mine)) + '</b> من <b>' + ar(list.length) + '</b> · لاعبين أونلاين <b>' + ar(net.players) + '</b>'
+      : 'الثعابين في الساحة <b>' + ar(list.length) + '</b>';
+    const top = list.slice(0, 8);
     let html = top.map((s, i) => row(i + 1, s)).join('');
-    if (player && player.alive && !top.includes(player)) html += '<li class="sep">⋯</li>' + row(sorted.indexOf(player) + 1, player);
+    if (me && me.alive && !me.hidden && !top.includes(me)) html += '<li class="sep">⋯</li>' + row(list.indexOf(me) + 1, me);
     $('lb').innerHTML = html;
+    updateNetPill();
   }
-  const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const row = (i, s) => '<li' + (s === player ? ' class="me"' : '') + '><span>' + ar(i) + '</span><span>' + esc(s.name) + '</span><span>' + ar(s.mass) + '</span></li>';
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const row = (i, s) => '<li class="' + (s === me ? 'me' : s.kind === 'remote' ? 'net' : '') + '"><span>' + ar(i) + '</span><span>' +
+    (s.kind === 'remote' ? '<i aria-label="لاعب أونلاين"></i>' : '') + esc(s.name) + '</span><span>' + ar(s.mass) + '</span></li>';
 
   // ---------- render ----------
   function resize() {
@@ -649,48 +867,42 @@
 
     ctx.fillStyle = col.outside; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = col.dune; ctx.fillRect(sx(0), sy(0), WORLD * scale, WORLD * scale);
-    // sand grid
     ctx.strokeStyle = col.line; ctx.lineWidth = Math.max(1, dpr);
     const step = 90;
     ctx.beginPath();
     for (let x = Math.max(0, Math.ceil(vx0 / step) * step); x <= Math.min(WORLD, vx1); x += step) { ctx.moveTo(sx(x), sy(Math.max(0, vy0))); ctx.lineTo(sx(x), sy(Math.min(WORLD, vy1))); }
     for (let y = Math.max(0, Math.ceil(vy0 / step) * step); y <= Math.min(WORLD, vy1); y += step) { ctx.moveTo(sx(Math.max(0, vx0)), sy(y)); ctx.lineTo(sx(Math.min(WORLD, vx1)), sy(y)); }
     ctx.stroke();
-    // border
     ctx.strokeStyle = col.date; ctx.lineWidth = 6 * scale; ctx.globalAlpha = .8;
     ctx.strokeRect(sx(0), sy(0), WORLD * scale, WORLD * scale); ctx.globalAlpha = 1;
 
-    // food
     const pulseT = reduceMotion ? 0 : now / 300;
     for (const f of food) {
-      if (f.x < vx0 - 20 || f.x > vx1 + 20 || f.y < vy0 - 20 || f.y > vy1 + 20) continue;
+      if (f.gone || f.x < vx0 - 20 || f.x > vx1 + 20 || f.y < vy0 - 20 || f.y > vy1 + 20) continue;
       const r = f.r * scale * (1 + Math.sin(pulseT + f.ph) * .12), x = sx(f.x), y = sy(f.y);
       ctx.globalAlpha = .25; ctx.fillStyle = f.c; circle(ctx, x, y, r * 1.9);
       ctx.globalAlpha = 1; circle(ctx, x, y, r);
       ctx.fillStyle = 'rgba(255,255,255,.45)'; circle(ctx, x - r * .3, y - r * .3, r * .35);
     }
 
-    // snakes, small first so big ones sit on top
-    const order = snakes.filter(s => s.alive).sort((a, b) => a.mass - b.mass);
-    if (player && player.alive) { order.splice(order.indexOf(player), 1); order.push(player); }
+    const order = alive().sort((a, b) => a.mass - b.mass);
+    if (me && order.includes(me)) { order.splice(order.indexOf(me), 1); order.push(me); }
     for (const s of order) {
       const m = s.r * 3;
       if (s.maxX < vx0 - m || s.minX > vx1 + m || s.maxY < vy0 - m || s.minY > vy1 + m) continue;
       const c = s.sp * scale;
       const pts = s.segs.map(k => [sx(k.x) / c, sy(k.y) / c]);
       if (s.shield > 0 && Math.floor(now / 120) % 2) ctx.globalAlpha = .45;
-      drawSnake(ctx, pts, c, s.skin, now, { S: 3, tongue: true, ang: s.ang, seed: s.seed, cheap: s !== player });
+      drawSnake(ctx, pts, c, s.skin, now, { S: 3, tongue: true, ang: s.ang, seed: s.seed, cheap: s !== me });
       ctx.globalAlpha = 1;
-      // name tag
       const h = s.segs[0];
       ctx.font = '600 ' + (11 * dpr) + 'px "IBM Plex Sans Arabic", sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-      ctx.fillStyle = s === player ? col.gold : 'rgba(236,230,214,.75)';
+      ctx.fillStyle = s === me ? col.gold : s.kind === 'remote' ? col.net : 'rgba(236,230,214,.75)';
       ctx.fillText(s.name, sx(h.x), sy(h.y) - s.r * scale * 1.6 - 4 * dpr);
-      if (s === player) { headScreen.x = sx(h.x) / dpr; headScreen.y = sy(h.y) / dpr; }
+      if (s === me) { headScreen.x = sx(h.x) / dpr; headScreen.y = sy(h.y) / dpr; }
     }
 
-    // particles + floaters
     for (const p of particles) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; circle(ctx, sx(p.x), sy(p.y), (2 + 4 * p.life) * scale); }
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (const f of floaters) {
@@ -700,14 +912,12 @@
     }
     ctx.globalAlpha = 1;
 
-    // minimap (bottom-right)
     const mm = Math.min(110 * dpr, W * .26), mx = W - mm - 10 * dpr, my = H - mm - 10 * dpr, k = mm / WORLD;
     ctx.fillStyle = 'rgba(13,17,32,.72)'; ctx.fillRect(mx, my, mm, mm);
     ctx.strokeStyle = col.line; ctx.lineWidth = dpr; ctx.strokeRect(mx, my, mm, mm);
-    for (const s of snakes) {
-      if (!s.alive) continue;
-      ctx.fillStyle = s === player ? col.gold : s.skin.pattern === 'bands' ? '#e2483a' : s.skin.base;
-      circle(ctx, mx + s.segs[0].x * k, my + s.segs[0].y * k, (s === player ? 3.5 : 1.5 + s.r / 10) * dpr);
+    for (const s of alive()) {
+      ctx.fillStyle = s === me ? col.gold : s.kind === 'remote' ? col.net : s.skin.pattern === 'bands' ? '#e2483a' : s.skin.base;
+      circle(ctx, mx + s.segs[0].x * k, my + s.segs[0].y * k, (s === me || s.kind === 'remote' ? 3.5 : 1.5 + s.r / 10) * dpr);
     }
     ctx.strokeStyle = 'rgba(236,230,214,.5)';
     ctx.strokeRect(mx + Math.max(0, vx0) * k, my + Math.max(0, vy0) * k, (Math.min(WORLD, vx1) - Math.max(0, vx0)) * k, (Math.min(WORLD, vy1) - Math.max(0, vy0)) * k);
@@ -750,36 +960,44 @@
   let last = performance.now();
   function frame(now) {
     const dt = Math.min(.05, (now - last) / 1000); last = now;
-    if (state !== 'paused') {
+    syncRoom(now);
+    const frozen = state === 'paused' && !online();
+    if (!frozen) {
       time += dt;
-      if (player && player.alive) steerPlayer();
-      for (const s of snakes) if (s.alive) {
-        if (s.bot) { s.think -= dt; if (s.think <= 0) { botThink(s); s.think = rnd(.1, .22); } }
-        updateSnake(s, dt);
+      if (me && me.alive && !me.hidden && state === 'play') { steerPlayer(); moveLocal(me, dt); }
+      for (const s of snakes.values()) {
+        if (!s.alive || s === me) continue;
+        if (s.kind === 'bot') { s.think -= dt; if (s.think <= 0) { botThink(s); s.think = rnd(.1, .22); } moveLocal(s, dt); }
+        else moveRemote(s, dt, now);
       }
-      for (const s of snakes) if (s.alive) eat(s, dt);
-      for (const s of snakes) {
-        if (!s.alive || s.shield > 0) continue;
+      if (me && me.alive && !me.hidden && state === 'play') eat(me, dt);
+      for (const s of snakes.values()) if (s.alive && s.kind === 'bot') eat(s, dt);
+      for (const s of [...snakes.values()]) {
+        if (!s.alive || s.hidden || s.shield > 0) continue;
+        if (s !== me && s.kind !== 'bot') continue;           // others judge their own snakes
+        if (s === me && state !== 'play') continue;
         const h = s.segs[0];
-        if (h.x < s.r || h.y < s.r || h.x > WORLD - s.r || h.y > WORLD - s.r) { kill(s, null); continue; }
+        if (h.x < s.r || h.y < s.r || h.x > WORLD - s.r || h.y > WORLD - s.r) { killLocal(s, null); continue; }
         const o = hitsBody(h.x, h.y, s.r * .75, s);
-        if (o) kill(s, o);
+        if (o) killLocal(s, o);
       }
-      // respawn bots, drop old corpses
-      snakes = snakes.filter(s => s.alive || s === player || time - s.deadAt < .1);
-      while (snakes.filter(s => s.bot && s.alive).length < BOT_COUNT) spawnBot();
-      if (food.length < FOOD_TARGET) for (let i = 0; i < 6 && food.length < FOOD_TARGET; i++) addFood(rnd(30, WORLD - 30), rnd(30, WORLD - 30), Math.random() < .12 ? 2 : 1);
+      for (const [k, s] of snakes) if (!s.alive && s !== me && time - s.deadAt > .1) snakes.delete(k);
+      if (net.isHost) {
+        const want = Math.max(6, BOT_COUNT - (net.players - 1) * 2);
+        let n = 0; for (const s of snakes.values()) if (s.kind === 'bot' && s.alive) n++;
+        if (n < want) spawnBot();
+      }
       for (const p of particles) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .94; p.vy *= .94; p.life -= dt * 1.6; }
       particles = particles.filter(p => p.life > 0);
       for (const f of floaters) f.life -= dt * .8;
       floaters = floaters.filter(f => f.life > 0);
       lbTimer -= dt; if (lbTimer <= 0) { lbTimer = .25; updateHud(); }
     }
-    // camera follows you, or the biggest snake while you're not playing
-    let focus = player && player.alive ? player : null;
-    if (!focus) focus = snakes.filter(s => s.alive).sort((a, b) => b.mass - a.mass)[0];
+    net.sendT -= dt; if (net.sendT <= 0) { net.sendT = 1 / 15; sendPresence(); }
+    let focus = me && me.alive && !me.hidden ? me : null;
+    if (!focus) focus = alive().sort((a, b) => b.mass - a.mass)[0];
     if (focus) {
-      const h = focus.segs[0], k = Math.min(1, dt * (focus === player ? 9 : 2));
+      const h = focus.segs[0], k = Math.min(1, dt * (focus === me ? 9 : 2));
       cam.x += (h.x - cam.x) * k; cam.y += (h.y - cam.y) * k; cam.r += (focus.r - cam.r) * Math.min(1, dt * 2);
     }
     render(now);
@@ -793,9 +1011,9 @@
   function steerPlayer() {
     let x = 0, y = 0;
     if (keys.has('left')) x -= 1; if (keys.has('right')) x += 1; if (keys.has('up')) y -= 1; if (keys.has('down')) y += 1;
-    if (x || y) { player.target = Math.atan2(y, x); pointerAim = null; }
-    else if (pointerAim) player.target = Math.atan2(pointerAim.y - headScreen.y, pointerAim.x - headScreen.x);
-    player.boost = mouseBoost || keyBoost || padBoost;
+    if (x || y) { me.target = Math.atan2(y, x); pointerAim = null; }
+    else if (pointerAim) me.target = Math.atan2(pointerAim.y - headScreen.y, pointerAim.x - headScreen.x);
+    me.boost = mouseBoost || keyBoost || padBoost;
   }
   const KEYMAP = { arrowup: 'up', arrowdown: 'down', arrowleft: 'left', arrowright: 'right', w: 'up', s: 'down', a: 'left', d: 'right' };
   document.addEventListener('keydown', e => {
@@ -826,12 +1044,18 @@
   $('sound').addEventListener('click', toggleSound);
   $('start').addEventListener('click', () => (state === 'paused' ? togglePause() : start()));
   $('pause').addEventListener('click', togglePause);
-  document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') togglePause(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (state === 'play') togglePause(); }
+    else net.since = Date.now();   // coming back: let whoever stayed keep running the bots
+  });
 
   buildPicker(); setSkin(skin); syncSound();
-  initWorld(); updateHud(true);
+  initFood();
+  for (let i = 0; i < BOT_COUNT; i++) spawnBot();
+  updateHud();
   new ResizeObserver(resize).observe(cvs); resize();
   requestAnimationFrame(frame);
+  connectRoom();
 })();
 </script>
 </body>
